@@ -1,0 +1,72 @@
+﻿@page "/pool"
+
+<PageTitle>Pool</PageTitle>
+
+@using hosted_pool.Data
+@inject PoolService PoolService
+
+@if (_pool == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+   var rounds = _pool.rounds;
+    @foreach (var r in rounds)
+    {
+        <b>@r.name</b>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>game</th>
+                    <th>confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var g in r.games)
+                {
+                    @foreach (var w in g.possibleWinners)
+                    {
+                        <tr>
+                            <td>@w.name</td>
+                            <td><select class="custom-select" title="Confidence" @onchange="OnValueChanged">
+                                <option value="Select" selected disabled="disabled">(Confidence)</option>
+                                @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                                    {
+                                        var t = $"{g.}:{w.name}:{c}";
+                                    <option value=@t>@c</option>
+                                }
+                            </select></td>
+                        </tr>
+                    }
+                    <tr><td>-----------</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+
+
+@code {
+    private Pool? _pool;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _pool = await PoolService.Get();
+    }
+    [Parameter]
+    public EventCallback<string[]> ValueChanged
+    {
+        get;
+        set;
+    }
+    private Task OnValueChanged(ChangeEventArgs args)
+    {
+        var t = args.Value.ToString().Split(':');
+
+        return ValueChanged.InvokeAsync(t);
+    }
+}

@@ -13,9 +13,9 @@ else
 {
 
    var rounds = _pool.rounds;
-    @foreach (var r in rounds)
+    @for(var r = 0; r < rounds.Count(); r++)
     {
-        <b>@r.name</b>
+        <b>@rounds[r].name</b>
         <table class="table">
             <thead>
                 <tr>
@@ -25,17 +25,18 @@ else
             </thead>
             <tbody>
 
-                @foreach (var g in r.games)
+                @for (int g = 0; g < rounds[r].games.Count(); g++)
                 {
-                    @foreach (var w in g.possibleWinners)
-                    {
+                    @for (var w =0; w < rounds[r].games[g].possibleWinners.Count(); w++)
+                        {
+                            var text = $"{rounds[r].games[g].possibleWinners[w].name}({r}.{g}.{w})";
                         <tr>
-                            <td>@w.name</td>
+                            <td>@text</td>
                             <td><select class="custom-select" title="Confidence" @onchange="OnValueChanged">
                                 <option value="Select" selected disabled="disabled">(Confidence)</option>
-                                @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                                @for (var c = 1; c <= rounds[r].games[g].possibleWinners.Count(); c++)
                                     {
-                                        var t = $"{g}:{w.name}:{c}";
+                                        var t = $"{r}:{g}:{w}:{c}";
                                     <option value=@t>@c</option>
                                 }
                             </select></td>

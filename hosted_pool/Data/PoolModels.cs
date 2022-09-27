@@ -1,14 +1,14 @@
 ﻿using System;
 namespace hosted_pool.Data
 {
-    public class Team
+    public class Pick
     {
         public string name { get; set; } = "";
         public int confidencePick { get; set; } = 0;
     }
     public class Game
     {
-        public List<Team> possibleWinners { get; set; } = new List<Team>();
+        public List<Pick> possibleWinners { get; set; } = new List<Pick>();
 
     }
     public class Round

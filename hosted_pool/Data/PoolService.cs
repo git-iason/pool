@@ -41,22 +41,22 @@ namespace hosted_pool.Data
 
             var res = new Pool();
 
-
+            var pickNum = 0;
             foreach (var v in values)
             {
                 var rnd = new Round { name = v[0].ToString(), games = new List<Game>() };
-                var game = new Game { possibleWinners = new List<Team>() };
+                var game = new Game { possibleWinners = new List<Pick>() };
                 foreach (var l in v.Skip(1))
                 {
                     var val = l.ToString();
                     if (val != "")
                     {
-                        game.possibleWinners.Add(new Team { name = val });
+                        game.possibleWinners.Add(new Pick { name = val });
                     }
                     else
                     {
                         rnd.games.Add(game);
-                        game = new Game { possibleWinners = new List<Team>() };
+                        game = new Game { possibleWinners = new List<Pick>() };
                     }
                 }
                 rnd.games.Add(game);

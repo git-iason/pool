@@ -4,7 +4,14 @@ namespace hosted_pool.Data
     public class Pick
     {
         public string name { get; set; } = "";
-        public int confidencePick { get; set; } = 0;
+        public int confidencePick { get; set; }
+        public string confidencePickStr
+        {
+            get { return confidencePick.ToString(); }
+            set {
+                confidencePick = Convert.ToInt32(value);
+            }
+        }
     }
     public class Game
     {
@@ -20,6 +27,11 @@ namespace hosted_pool.Data
     {
         public string name { get; set; } = "";
         public List<Round> rounds { get; set; } = new List<Round>();
+
+        public void SetPick(int round, int game, int pick, int conf)
+        {
+            rounds[round].games[game].possibleWinners[pick].confidencePick = conf;
+        }
     }
 
 }

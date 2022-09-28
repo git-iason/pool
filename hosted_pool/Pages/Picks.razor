@@ -68,6 +68,20 @@ else
     {
         var t = args.Value.ToString().Split(':');
 
+        var round = Convert.ToInt32(t[0]);
+        var game = Convert.ToInt32(t[1]);
+        var pick = Convert.ToInt32(t[2]);
+        var conf = Convert.ToInt32(t[3]);
+
+        _pool.SetPick(round, game, pick, conf);
+
+
+
         return ValueChanged.InvokeAsync(t);
+    }
+
+    private void UpdatePool(int r, int g, int p, int c)
+    {
+        _pool.SetPick(r, g, p, c);
     }
 }

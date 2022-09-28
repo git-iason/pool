@@ -1,0 +1,71 @@
+﻿@page "/pool2"
+
+<PageTitle>Pool</PageTitle>
+
+@using hosted_pool.Data
+@inject PoolService PoolService
+
+
+<EditForm EditContext="@EditContext">
+    <DataAnnotationsValidator />
+
+    @if (_pool == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+
+        var rounds = _pool.rounds;
+        @foreach (var r in rounds)
+        {
+            <b>@r.name</b>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>game</th>
+                        <th>confidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach(var g in r.games)
+                    {
+                        @foreach (var w in g.possibleWinners)
+                        {
+                            var text = $"{w.name}";
+                            <tr>
+                                <td>@text</td>
+                                <td>
+                                    <select @bind="@w.confidencePickStr">
+                                        <option value="Select" selected disabled="disabled">Confidence</option>
+                                        @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                                        {
+                                            <option value="@c">@c</option>
+                                        }
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                        <tr><td>-----------</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+</EditForm>
+
+    @code {
+        private EditContext EditContext;
+        private Pool? _pool;
+
+        protected override async Task OnInitializedAsync()
+        {
+            _pool = await PoolService.Get();
+            EditContext = new EditContext(_pool);
+            //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
+            base.OnInitializedAsync();
+        }
+
+    }

@@ -37,8 +37,32 @@ namespace hosted_pool.Data
             var request = _googleSheetValues.Get(_docId, range);
             var response = request.Execute();
             values = response.Values;
+            var res = FromSheetsValues(values);
+            return Task.FromResult(res);
+        }
 
 
+        public void Put(Pool pool)
+        {
+            var res = ToSheetsValues(pool);
+            Console.WriteLine(res);
+
+            SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
+
+            var vr = new ValueRange();
+            vr.Values = res;
+
+            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"picks!A1:X100");
+            request.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
+
+            // To execute asynchronously in an async method, replace `request.Execute()` as shown:
+            var response = request.Execute();
+            Console.WriteLine(response);
+
+        }
+
+        private static Pool FromSheetsValues(IList<IList<object>> values)
+        {
             var res = new Pool();
 
             var pickNum = 0;
@@ -73,8 +97,29 @@ namespace hosted_pool.Data
                     }
                 }
             }
-            return Task.FromResult(res);
+
+            return res;
         }
-	}
+
+        private static List<IList<object>> ToSheetsValues(Pool pool)
+        {
+            var res = new List<IList<object>>();
+            foreach (var r in pool.rounds)
+            {
+                foreach(var g in r.games)
+                {
+                    foreach(var t in g.possibleWinners)
+                    {
+                        var inner = new List<object> { t.name, t.confidencePick };
+                        res.Add(inner);
+                    }
+                    res.Add(new List<object> { "--", "--" });
+                }
+            }
+
+
+            return res;
+        }
+    }
 }
 

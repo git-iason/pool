@@ -15,7 +15,6 @@
     }
     else
     {
-        <button type="button"  onclick="@shipit">ship it!</button>
         var rounds = _pool.rounds;
         @foreach (var r in rounds)
         {
@@ -29,7 +28,7 @@
                 </thead>
                 <tbody>
 
-                    @foreach(var g in r.games)
+                    @foreach (var g in r.games)
                     {
                         @foreach (var w in g.possibleWinners)
                         {
@@ -52,6 +51,7 @@
                 </tbody>
             </table>
         }
+        <button type="button" onclick="@shipit">ship it!</button>
     }
 
 </EditForm>

@@ -75,7 +75,7 @@ namespace hosted_pool.Data
                     var val = l.ToString();
                     if (val != "")
                     {
-                        game.possibleWinners.Add(new Pick { name = val });
+                        game.AddWinner(new Pick { name = val });
                     }
                     else
                     {

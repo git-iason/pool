@@ -5,10 +5,12 @@ namespace hosted_pool.Data
     {
         public string name { get; set; } = "";
         public int confidencePick { get; set; }
+        public Game? associatedGame { get; set; } = null;
         public string confidencePickStr
         {
             get { return confidencePick.ToString(); }
             set {
+                associatedGame?.UpdatePicks(value);
                 confidencePick = Convert.ToInt32(value);
             }
         }
@@ -17,6 +19,18 @@ namespace hosted_pool.Data
     {
         public List<Pick> possibleWinners { get; set; } = new List<Pick>();
 
+        public void AddWinner(Pick pick)
+        {
+            pick.associatedGame = this;
+            possibleWinners.Add(pick);
+        }
+        public void UpdatePicks(string conf)
+        {
+            if (conf == "0") return;
+            foreach (var p in possibleWinners)
+                if (p.confidencePickStr == conf)
+                    p.confidencePickStr = "0";
+        }
     }
     public class Round
     {
@@ -27,11 +41,6 @@ namespace hosted_pool.Data
     {
         public string name { get; set; } = "";
         public List<Round> rounds { get; set; } = new List<Round>();
-
-        public void SetPick(int round, int game, int pick, int conf)
-        {
-            rounds[round].games[game].possibleWinners[pick].confidencePick = conf;
-        }
     }
 
 }

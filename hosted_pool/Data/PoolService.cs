@@ -68,35 +68,26 @@ namespace hosted_pool.Data
             var pickNum = 0;
             foreach (var v in values)
             {
-                var rnd = new Round { name = v[0].ToString(), games = new List<Game>() };
-                var game = new Game { possibleWinners = new List<Pick>() };
+                var rnd = new Round { name = v[0].ToString() };
+                var game = new Game {  };
                 foreach (var l in v.Skip(1))
                 {
                     var val = l.ToString();
                     if (val != "")
                     {
-                        game.AddWinner(new Pick { name = val });
+                        game.AddPosssible(new Pick { name = val });
                     }
                     else
                     {
-                        rnd.games.Add(game);
-                        game = new Game { possibleWinners = new List<Pick>() };
+                        rnd.AddGame(game);
+                        game = new Game {};
                     }
                 }
-                rnd.games.Add(game);
-                res.rounds.Add(rnd);
+                rnd.AddGame(game);
+                res.AddRound(rnd);
             }
 
-            foreach (var r in res.rounds)
-            {
-                foreach (var g in r.games)
-                {
-                    foreach (var w in g.possibleWinners)
-                    {
-                        Console.WriteLine(w.name);
-                    }
-                }
-            }
+           
 
             return res;
         }

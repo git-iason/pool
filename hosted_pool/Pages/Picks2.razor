@@ -1,4 +1,4 @@
-﻿@page "/pool2"
+﻿@page "/"
 
 <PageTitle>Pool</PageTitle>
 
@@ -11,7 +11,7 @@
 
     @if (_pool == null)
     {
-        <p><em>Loading...</em></p>
+        <p><em>Log in to view pool!</em></p>
     }
     else
     {
@@ -59,19 +59,30 @@
     @code {
         private EditContext EditContext;
         private Pool? _pool;
-
+        private AuthenticationState state;
         protected override async Task OnInitializedAsync()
         {
-            _pool = await PoolService.Get();
-            EditContext = new EditContext(_pool);
+            state = await aspService.GetAuthenticationStateAsync();
+            var user = state.User.ToString();
+            if (state.User.Identity.IsAuthenticated)
+            {
+                _pool = await PoolService.Get();
+
+                EditContext = new EditContext(_pool);
+            }
+            else
+            {
+                _pool = null;
+                EditContext = new EditContext(new object());
+            }
             //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
-            base.OnInitializedAsync();
+            
+            await base.OnInitializedAsync();
         }
 
         private async void shipit()
         {
-            var state = await aspService.GetAuthenticationStateAsync();
-            var user = state.User.ToString();
-            PoolService.Put(_pool);
+
+            PoolService.Put(_pool, state.User.Identity.Name);
         }
-    }
+        }

@@ -42,9 +42,9 @@ namespace hosted_pool.Data
         }
 
 
-        public void Put(Pool pool)
+        public void Put(Pool pool, string user)
         {
-            var res = ToSheetsValues(pool);
+            var res = ToSheetsValues(pool, user);
             Console.WriteLine(res);
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
@@ -92,16 +92,18 @@ namespace hosted_pool.Data
             return res;
         }
 
-        private static List<IList<object>> ToSheetsValues(Pool pool)
+        private static List<IList<object>> ToSheetsValues(Pool pool, string user)
         {
             var res = new List<IList<object>>();
+            var inner = new List<object> { user };
+            res.Add(inner);
             foreach (var r in pool.rounds)
             {
                 foreach(var g in r.games)
                 {
                     foreach(var t in g.possibleWinners)
                     {
-                        var inner = new List<object> { t.name, t.confidencePick };
+                        inner = new List<object> {t.confidencePick };
                         res.Add(inner);
                     }
                     res.Add(new List<object> { "--", "--" });

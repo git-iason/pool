@@ -22,6 +22,8 @@ namespace hosted_pool.Data
         {
             get { return associatedGame.id + "." + name; }
         }
+
+        public int num { get; set; } = 0;
     }
     public class Game
     {
@@ -31,6 +33,7 @@ namespace hosted_pool.Data
         public void AddPosssible(Pick pick)
         {
             pick.associatedGame = this;
+            pick.num = _possibleWinners.Count() + 1;
             _possibleWinners.Add(pick);
         }
         public void UpdatePicks(string conf)
@@ -55,6 +58,8 @@ namespace hosted_pool.Data
         {
             get { return associatedRound.id + "." + possibleWinners.Aggregate<Pick, string>("", (r, x) => r += $".{x.name}"); }
         }
+
+        public int num { get; set; } = 0;
     }
     public class Round
     {
@@ -65,6 +70,7 @@ namespace hosted_pool.Data
         public void AddGame(Game game)
         {
             game.associatedRound = this;
+            game.num = _games.Count() + 1;
             _games.Add(game);
         }
 
@@ -86,6 +92,8 @@ namespace hosted_pool.Data
             }
         }
 
+        public int num { get; set; } = 0;
+
     }
     public class Pool
     {
@@ -96,6 +104,7 @@ namespace hosted_pool.Data
         public void AddRound(Round round)
         {
             round.associatedPool = this;
+            round.num = _rounds.Count + 1;
             _rounds.Add(round);
         }
 
@@ -109,4 +118,6 @@ namespace hosted_pool.Data
             return res;
         }
     }
+
+   
 }

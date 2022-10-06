@@ -26,7 +26,7 @@
     }
     else
     {
-
+        submited = false;
         <p><em>@_pool.welcomeStr</em></p>
 
 
@@ -78,13 +78,16 @@
                 </tbody>
             </table>
         }
+        <b>Tiebeakers</b>
         <table class="table">
             @foreach (var t in _pool.tiebreakers)
             {
+                
                 <tr>
-                    <td>@t.name</td>
-                    <td>@t.question</td>
-                    <td>
+                    <td colspan="2">@t.question</td>
+                </tr>
+                <tr>
+                    <td colspan="2">
                         <input @bind="@t.answer" />
                         @if (t.answer == "")
                         {
@@ -92,6 +95,7 @@
                         }
                     </td>
                 </tr>
+
             }
         </table>
         <button type="button" onclick="@shipit"> submit</button><br />

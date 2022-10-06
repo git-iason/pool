@@ -11,12 +11,20 @@
 
     @if (_pool == null)
     {
-        <p><em>Log in to view pool!</em></p>
+        <p><em>Loading</em></p>
+    }
+    else if (!state.User.Identity.IsAuthenticated)
+    {
+        <p><em>@_pool.welcomeStr</em></p>
+        <p><em>Please log in to view the bracket</em></p>
     }
     else
     {
+        <p><em>@_pool.welcomeStr</em></p>
+        <p><em>Please make your picks below and choose submit!</em></p>
         var rounds = _pool.rounds;
-        <input @bind="@_pool.pickSet" placeholder="Your Name"/><br />
+            <label><b>Pick set name:</b> </label>
+        <input @bind="@_pool.pickSet" placeholder="Your Name" /><br />
         <button type="button" onclick="@shipit">ship it!</button><br />
         @foreach (var r in rounds)
         {
@@ -81,16 +89,14 @@
             if (state.User.Identity.IsAuthenticated)
             {
                 _pool = await PoolService.Get(state.User.Identity.Name, out userIndex);
-
-                EditContext = new EditContext(_pool);
             }
             else
             {
-                _pool = null;
-                EditContext = new EditContext(new object());
+                _pool = await PoolService.Get("", out userIndex);
             }
+            EditContext = new EditContext(_pool);
             //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
-            
+
             await base.OnInitializedAsync();
         }
 

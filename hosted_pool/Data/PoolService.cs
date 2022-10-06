@@ -30,11 +30,15 @@ namespace hosted_pool.Data
         {
             var pool = GetPool();
             var pickSet = "";
-            var picks = GetPicks(user, out userIndex, out pickSet);
-            if (picks != null)
+            userIndex = -1;
+            if (user != "")
             {
-                pool.LoadPicks(picks);
-                pool.pickSet = pickSet;
+                var picks = GetPicks(user, out userIndex, out pickSet);
+                if (picks != null)
+                {
+                    pool.LoadPicks(picks);
+                    pool.pickSet = pickSet;
+                }
             }
             return Task.FromResult(pool);
         }
@@ -59,7 +63,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nfl!R1C1:R20C24";
+            var range = $"nfl!R1C1:R25C25";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -97,8 +101,15 @@ namespace hosted_pool.Data
         {
             var res = new Pool();
 
+            if(values.Count() >= 2)
+            {
+                res.welcomeStr = values[0][1].ToString();
+                //res.poolName = values[1][1].ToString();
+            }
+
+
             var pickNum = 0;
-            foreach (var v in values)
+            foreach (var v in values.Skip(2))
             {
                 if (v.Count() == 0) continue;
                 var rnd = new Round { name = v[0].ToString() };
@@ -153,11 +164,13 @@ namespace hosted_pool.Data
            }
            if (userIndex == values[0].Count) return null;
 
-            pickSet = values[1][userIndex].ToString();
+           pickSet = values[1][userIndex].ToString();
            foreach(var pick in values.Skip(2))
            {
-                res.Add(pick[userIndex].ToString(), pick[userIndex + 1].ToString());
-           }
+                var key = pick[userIndex].ToString();
+                var val = pick.Count > userIndex + 1?pick[userIndex + 1].ToString():"";
+                res.Add(key, val);
+            }
 
 
 
@@ -166,7 +179,7 @@ namespace hosted_pool.Data
         private static List<IList<object>> ToSheetsValues(Pool pool, string user, int userIndex)
         {
             var res = new List<IList<object>>();
-            var inner = new List<object> { user, "" };
+            var inner = new List<object> { user, "." };
             res.Add(inner);
             inner = new List<object> { pool.pickSet, "confidence" };
             res.Add(inner);

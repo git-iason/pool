@@ -109,6 +109,7 @@ namespace hosted_pool.Data
     public class Pool
     {
         public string poolName { get; set; } = "";
+        public string welcomeStr { get; set; } = "";
         public string pickSet { get; set; } = "";
 
         private List<Round> _rounds = new List<Round>();

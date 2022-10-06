@@ -16,6 +16,7 @@
     else
     {
         var rounds = _pool.rounds;
+        <button type="button" onclick="@shipit">ship it!</button><br />
         @foreach (var r in rounds)
         {
             <b>@r.name</b>
@@ -48,9 +49,20 @@
                         }
                         <tr><td>-----------</td></tr>
                     }
+
                 </tbody>
             </table>
         }
+        <table class="table">
+            @foreach (var t in _pool.tiebreakers)
+            {
+                <tr>
+                    <td>@t.name</td>
+                    <td>@t.question</td>
+                    <td><input @bind="@t.answer" /></td>
+                </tr>
+            }
+         </table>
         <button type="button" onclick="@shipit">ship it!</button>
     }
 
@@ -60,13 +72,14 @@
         private EditContext EditContext;
         private Pool? _pool;
         private AuthenticationState state;
+        private int userIndex = -1;
         protected override async Task OnInitializedAsync()
         {
             state = await aspService.GetAuthenticationStateAsync();
             var user = state.User.ToString();
             if (state.User.Identity.IsAuthenticated)
             {
-                _pool = await PoolService.Get();
+                _pool = await PoolService.Get(state.User.Identity.Name, out userIndex);
 
                 EditContext = new EditContext(_pool);
             }
@@ -83,6 +96,6 @@
         private async void shipit()
         {
 
-            PoolService.Put(_pool, state.User.Identity.Name);
+            PoolService.Put(_pool, state.User.Identity.Name, userIndex);
         }
-        }
+   }

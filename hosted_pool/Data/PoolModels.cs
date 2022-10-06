@@ -20,7 +20,7 @@ namespace hosted_pool.Data
 
         public string id
         {
-            get { return associatedGame.id + "." + name; }
+            get { return associatedGame.id + name; }
         }
 
         public int num { get; set; } = 0;
@@ -56,7 +56,7 @@ namespace hosted_pool.Data
 
         public string id
         {
-            get { return associatedRound.id + "." + possibleWinners.Aggregate<Pick, string>("", (r, x) => r += $".{x.name}"); }
+            get { return associatedRound.id + "." + possibleWinners.Aggregate<Pick, string>("", (r, x) => r += $"{x.name}."); }
         }
 
         public int num { get; set; } = 0;
@@ -95,12 +95,25 @@ namespace hosted_pool.Data
         public int num { get; set; } = 0;
 
     }
+    public class TieBreaker
+    {
+        public string name { get; set; } = "";
+        public string question { get; set; } = "";
+        private string _answer = "";
+        public string answer
+        {
+            get { return _answer; }
+            set { _answer = value; }
+        }
+    }
     public class Pool
     {
         public string name { get; set; } = "";
         private List<Round> _rounds = new List<Round>();
         public IReadOnlyCollection<Round> rounds => _rounds.AsReadOnly();
 
+        private List<TieBreaker> _tiebreakers = new List<TieBreaker>();
+        public IReadOnlyCollection<TieBreaker> tiebreakers => _tiebreakers.AsReadOnly();
         public void AddRound(Round round)
         {
             round.associatedPool = this;
@@ -108,6 +121,10 @@ namespace hosted_pool.Data
             _rounds.Add(round);
         }
 
+        public void AddTiebreaker(string name, string question)
+        {
+            _tiebreakers.Add(new TieBreaker { name=name, question = question});
+        }
         public override string ToString()
         {
             var res = "";
@@ -116,6 +133,28 @@ namespace hosted_pool.Data
                 res += r.ToString();
             }
             return res;
+        }
+
+        public void LoadPicks(Dictionary<string,string> picks)
+        {
+            foreach(var round in rounds)
+            {
+                foreach(var game in round.games)
+                {
+                    foreach(var possible in game.possibleWinners)
+                    {
+                        string val = "0";
+                        var success = picks.TryGetValue(possible.id, out val);
+                        possible.confidencePickStr = val;
+                    }
+                }
+            }
+            foreach(var t in tiebreakers)
+            {
+                string val = "";
+                var success = picks.TryGetValue(t.name, out val);
+                t.answer = val;
+            }
         }
     }
 

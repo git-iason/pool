@@ -18,8 +18,15 @@
         <p><em>@_pool.welcomeStr</em></p>
         <p><em>Please log in to view the bracket</em></p>
     }
+    else if (submited && _pool.IsComplete())
+    {
+        <p><em>@_pool.welcomeStr</em></p>
+        <p>Your picks have been submitted</p>
+        <button type="button" onclick="@edit">Edit picks</button>
+    }
     else
     {
+
         <p><em>@_pool.welcomeStr</em></p>
 
 
@@ -87,7 +94,7 @@
                 </tr>
             }
         </table>
-        <button type="button" onclick="@shipit">submit</button><br />
+        <button type="button" onclick="@shipit"> submit</button><br />
         @if (!_pool.IsComplete())
         {
             <p><label style="color: red">Picks are incomplete!</label></p>
@@ -101,6 +108,7 @@
         private Pool? _pool;
         private AuthenticationState state;
         private int userIndex = -1;
+        public bool submited { get; set; } = false;
         protected override async Task OnInitializedAsync()
         {
             state = await aspService.GetAuthenticationStateAsync();
@@ -119,9 +127,14 @@
             await base.OnInitializedAsync();
         }
 
+        private async void edit()
+{
+            submited = false;
+}
         private async void shipit()
         {
 
             PoolService.Put(_pool, state.User.Identity.Name, userIndex);
+            submited = true;
         }
    }

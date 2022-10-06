@@ -21,11 +21,16 @@
     else
     {
         <p><em>@_pool.welcomeStr</em></p>
-        <p><em>Please make your picks below and choose submit!</em></p>
+
+
         var rounds = _pool.rounds;
-            <label><b>Pick set name:</b> </label>
+        <label><b>Pick set name:</b> </label>
         <input @bind="@_pool.pickSet" placeholder="Your Name" /><br />
-        <button type="button" onclick="@shipit">ship it!</button><br />
+        <button type="button" onclick="@shipit">submit</button><br />
+        @if (!_pool.IsComplete())
+        {
+            <p><label style="color: red">Picks are incomplete!</label></p>
+        }
         @foreach (var r in rounds)
         {
             <b>@r.name</b>
@@ -53,6 +58,10 @@
                                             <option value="@c">@c</option>
                                         }
                                     </select>
+                                    @if (w.confidencePick == 0)
+                                    {
+                                        <label style="color: red">  ****</label>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -68,11 +77,21 @@
                 <tr>
                     <td>@t.name</td>
                     <td>@t.question</td>
-                    <td><input @bind="@t.answer" /></td>
+                    <td>
+                        <input @bind="@t.answer" />
+                        @if (t.answer == "")
+                        {
+                            <label style="color: red">****</label>
+                        }
+                    </td>
                 </tr>
             }
         </table>
-        <button type="button" onclick="@shipit">ship it!</button>
+        <button type="button" onclick="@shipit">submit</button><br />
+        @if (!_pool.IsComplete())
+        {
+            <p><label style="color: red">Picks are incomplete!</label></p>
+        }
     }
 
 </EditForm>

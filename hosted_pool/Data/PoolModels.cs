@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml.Linq;
+using hosted_pool.Pages;
 
 namespace hosted_pool.Data
 {
@@ -158,6 +159,26 @@ namespace hosted_pool.Data
                 var success = picks.TryGetValue(t.name, out val);
                 t.answer = val;
             }
+        }
+
+        public bool IsComplete()
+        {
+            foreach (var round in rounds)
+            {
+                foreach (var game in round.games)
+                {
+                    foreach (var possible in game.possibleWinners)
+                    {
+                        if (possible.confidencePick == 0) return false;
+                    }
+                }
+            }
+            foreach (var t in tiebreakers)
+            {
+                if (t.answer == "") return false;
+            }
+
+            return true;
         }
     }
 

@@ -165,3 +165,19 @@ hosted_pool/bin/Debug/net6.0/app.db
 hosted_pool/choice_secret_.json
 hosted_pool/choice_secret.json
 *.zip
+.vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
+.vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
+.vs/hosted_pool/xs/project-cache/hosted_pool-Release.json
+hosted_pool/app.db
+hosted_pool/app.db-shm
+hosted_pool/app.db-wal
+hosted_pool/Properties/PublishProfiles/pool - Zip Deploy.pubxml
+hosted_pool/Properties/PublishProfiles/pool - Zip Deploy.pubxml.user
+.vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
+hosted_pool/app.db
+hosted_pool/app.db-shm
+hosted_pool/app.db-wal
+hosted_pool/app.db-wal
+hosted_pool/app.db-shm
+hosted_pool/app.db
+.vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json

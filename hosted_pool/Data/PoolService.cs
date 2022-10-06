@@ -48,7 +48,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"picks!R1C1:R80C50";
+            var range = $"mlbpicks!R1C1:R80C50";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -63,7 +63,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nfl!R1C1:R25C25";
+            var range = $"mlb!R1C1:R25C25";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -85,7 +85,7 @@ namespace hosted_pool.Data
 
 
 
-            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"picks!R1C{userIndex+1}:R80C{userIndex + 2}");
+            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"mlbpicks!R1C{userIndex+1}:R80C{userIndex + 2}");
 
 
 

@@ -88,7 +88,7 @@ namespace hosted_pool.Data
         {
             get
             {
-                return associatedPool.name + "." + name;
+                return associatedPool.poolName + "." + name;
             }
         }
 
@@ -108,7 +108,9 @@ namespace hosted_pool.Data
     }
     public class Pool
     {
-        public string name { get; set; } = "";
+        public string poolName { get; set; } = "";
+        public string pickSet { get; set; } = "";
+
         private List<Round> _rounds = new List<Round>();
         public IReadOnlyCollection<Round> rounds => _rounds.AsReadOnly();
 

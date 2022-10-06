@@ -16,6 +16,7 @@
     else
     {
         var rounds = _pool.rounds;
+        <input @bind="@_pool.pickSet" placeholder="Your Name"/><br />
         <button type="button" onclick="@shipit">ship it!</button><br />
         @foreach (var r in rounds)
         {
@@ -62,7 +63,7 @@
                     <td><input @bind="@t.answer" /></td>
                 </tr>
             }
-         </table>
+        </table>
         <button type="button" onclick="@shipit">ship it!</button>
     }
 

@@ -29,12 +29,17 @@ namespace hosted_pool.Data
         public Task<Pool> Get(string user, out int userIndex)
         {
             var pool = GetPool();
-            var picks = GetPicks(user, out userIndex);
-            if(picks != null) pool.LoadPicks(picks);
+            var pickSet = "";
+            var picks = GetPicks(user, out userIndex, out pickSet);
+            if (picks != null)
+            {
+                pool.LoadPicks(picks);
+                pool.pickSet = pickSet;
+            }
             return Task.FromResult(pool);
         }
 
-        private Dictionary<string, string> GetPicks(string user, out int userIndex)
+        private Dictionary<string, string> GetPicks(string user, out int userIndex, out string pickSet)
         {
             IList<IList<object>> values = null;
 
@@ -45,7 +50,7 @@ namespace hosted_pool.Data
             var request = _googleSheetValues.Get(_docId, range);
             var response = request.Execute();
             values = response.Values;
-            var res = GetPicksDictionary(values, user, out userIndex);
+            var res = GetPicksDictionary(values, user, out userIndex, out pickSet);
             return res;
         }
 
@@ -127,9 +132,10 @@ namespace hosted_pool.Data
             return res;
         }
 
-        private static Dictionary<string, string> GetPicksDictionary(IList<IList<object>> values, string user, out int userIndex)
+        private static Dictionary<string, string> GetPicksDictionary(IList<IList<object>> values, string user, out int userIndex, out string pickSet)
         {
             var res = new Dictionary<string, string>();
+            pickSet = "";
             if(values == null || values.Count<=0)
             {
                 userIndex = 0;
@@ -147,7 +153,8 @@ namespace hosted_pool.Data
            }
            if (userIndex == values[0].Count) return null;
 
-           foreach(var pick in values.Skip(1))
+            pickSet = values[1][userIndex].ToString();
+           foreach(var pick in values.Skip(2))
            {
                 res.Add(pick[userIndex].ToString(), pick[userIndex + 1].ToString());
            }
@@ -159,7 +166,9 @@ namespace hosted_pool.Data
         private static List<IList<object>> ToSheetsValues(Pool pool, string user, int userIndex)
         {
             var res = new List<IList<object>>();
-            var inner = new List<object> { user, "confidence" };
+            var inner = new List<object> { user, "" };
+            res.Add(inner);
+            inner = new List<object> { pool.pickSet, "confidence" };
             res.Add(inner);
             foreach (var r in pool.rounds)
             {

@@ -34,6 +34,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 using Microsoft.Extensions.Logging;
 
+using hosted_pool.Data;
 namespace hosted_pool.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
@@ -49,6 +50,7 @@ namespace hosted_pool.Areas.Identity.Pages.Account
 
         private readonly ILogger<ExternalLoginModel> _logger;
 
+        private readonly PoolService poolService;
         public ExternalLoginModel(
 
             SignInManager<IdentityUser> signInManager,
@@ -75,6 +77,7 @@ namespace hosted_pool.Areas.Identity.Pages.Account
 
             _emailSender = emailSender;
 
+            poolService = new PoolService();
         }
 
         [BindProperty]
@@ -167,7 +170,6 @@ namespace hosted_pool.Areas.Identity.Pages.Account
             if (result.Succeeded)
 
             {
-
                 return LocalRedirect(returnUrl);
 
             }
@@ -188,7 +190,7 @@ namespace hosted_pool.Areas.Identity.Pages.Account
                 var userName = info.Principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value.ToString();
                 var userSplit = userName.Split(" ");
                 var userCombined = string.Join(".", userSplit);
-                var user = new IdentityUser { UserName = userCombined, Email = userEmail };
+                var user = new IdentityUser { UserName = userCombined, Email = userEmail, NormalizedUserName=userName };
                 var resultCreateUser = await _userManager.CreateAsync(user);
                 if (resultCreateUser.Succeeded)
                 {

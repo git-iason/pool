@@ -51,7 +51,7 @@
                         {
                             var text = $"{w.name}";
                             <tr>
-                                <td>@text</td>
+                                <td style="font-size: larger">@text</td>
                                 <td>
                                     <select @bind="@w.confidencePickStr">
                                         <option value="Select" selected disabled="disabled">Confidence</option>
@@ -108,14 +108,23 @@
     private AuthenticationState state;
     private int userIndex = -1;
     public bool submited { get; set; } = false;
+    public string _email = "";
     protected override async Task OnInitializedAsync()
     {
         state = await aspService.GetAuthenticationStateAsync();
-       
+
         var user = state.User.ToString();
         if (state.User.Identity.IsAuthenticated)
         {
-            _pool = await PoolService.Get(state.User.Identity.Name, out userIndex);
+
+            _email = state.User.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Email).Value.ToString();
+            var name = state.User.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Name).Value.ToString();
+
+            var name_parts = name.Split(".");
+            var new_name = string.Join(" ", name_parts);
+            _pool = await PoolService.Get(_email, out userIndex);
+            if (_pool.pickSet == "")
+                _pool.pickSet = new_name;
         }
         else
         {
@@ -134,9 +143,8 @@
     private async void shipit()
     {
         var s = state.User.Claims.ToList();
-        PoolService.Put(_pool, state.User.Identity.Name, userIndex);
+        PoolService.Put(_pool, _email, userIndex);
         submited = true;
     }
-
 
 }

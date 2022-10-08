@@ -1,19 +1,16 @@
-﻿using System;
-using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource.GetRequest;
-using System.IO;
+﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
-using Google.Apis.Auth.OAuth2;
 using Google.Apis.Sheets.v4.Data;
 using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource;
-using System.Reflection.Metadata;
 
 namespace hosted_pool.Data
 {
-	public class PoolService
+    public class PoolService
 	{
         private SheetsService _service = null;
         private const string _docId = "1o8I88rUZBz9cEOSk9EJNuz654Yl8Ne4qLGS52-ejDMI";
+        public string FullName { get; set; } = "";
 		public PoolService()
 		{
             var jsonCredsContent = System.IO.File.ReadAllText("choice_secret.json");
@@ -71,6 +68,7 @@ namespace hosted_pool.Data
             var response = request.Execute();
             values = response.Values;
             var res = FromSheetsValues(values);
+            res.pickSet = FullName;
             return res;
         }
 
@@ -98,6 +96,10 @@ namespace hosted_pool.Data
 
         }
 
+        public void PutUserData(string name, string user_name, string email)
+        {
+            FullName = name;
+        }
         private static Pool FromSheetsValues(IList<IList<object>> values)
         {
             var res = new Pool();

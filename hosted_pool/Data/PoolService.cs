@@ -26,6 +26,7 @@ namespace hosted_pool.Data
             });
         }
 
+      
         public Task<Pool> Get(string user, out int userIndex)
         {
             var pool = GetPool();

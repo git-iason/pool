@@ -3,41 +3,36 @@
 <PageTitle>Pool</PageTitle>
 
 @using hosted_pool.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
 @inject PoolService PoolService
 @inject AuthenticationStateProvider aspService
-
+@inject SignInManager<IdentityUser> SignInManager
 <EditForm EditContext="@EditContext">
     <DataAnnotationsValidator />
-
+    @((MarkupString)@_pool.welcomeStr)
     @if (_pool == null)
     {
         <p><em>Loading</em></p>
     }
     else if (!state.User.Identity.IsAuthenticated)
     {
-        <p><em>@_pool.welcomeStr</em></p>
         <p><em>Please log in to view the bracket</em></p>
     }
     else if (submited && _pool.IsComplete())
     {
-        <p><em>@_pool.welcomeStr</em></p>
         <p>Your picks have been submitted</p>
         <button type="button" onclick="@edit">Edit picks</button>
     }
     else
     {
         submited = false;
-        <p><em>@_pool.welcomeStr</em></p>
 
 
         var rounds = _pool.rounds;
         <label><b>Pick set name:</b> </label>
         <input @bind="@_pool.pickSet" placeholder="Your Name" /><br />
-        <button type="button" onclick="@shipit">submit</button><br />
-        @if (!_pool.IsComplete())
-        {
-            <p><label style="color: red">Picks are incomplete!</label></p>
-        }
+
         @foreach (var r in rounds)
         {
             <b>@r.name</b>
@@ -82,7 +77,7 @@
         <table class="table">
             @foreach (var t in _pool.tiebreakers)
             {
-                
+
                 <tr>
                     <td colspan="2">@t.question</td>
                 </tr>
@@ -107,38 +102,41 @@
 
 </EditForm>
 
-    @code {
-        private EditContext EditContext;
-        private Pool? _pool;
-        private AuthenticationState state;
-        private int userIndex = -1;
-        public bool submited { get; set; } = false;
-        protected override async Task OnInitializedAsync()
+@code {
+    private EditContext EditContext;
+    private Pool? _pool;
+    private AuthenticationState state;
+    private int userIndex = -1;
+    public bool submited { get; set; } = false;
+    protected override async Task OnInitializedAsync()
+    {
+        state = await aspService.GetAuthenticationStateAsync();
+       
+        var user = state.User.ToString();
+        if (state.User.Identity.IsAuthenticated)
         {
-            state = await aspService.GetAuthenticationStateAsync();
-            var user = state.User.ToString();
-            if (state.User.Identity.IsAuthenticated)
-            {
-                _pool = await PoolService.Get(state.User.Identity.Name, out userIndex);
-            }
-            else
-            {
-                _pool = await PoolService.Get("", out userIndex);
-            }
-            EditContext = new EditContext(_pool);
-            //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
-
-            await base.OnInitializedAsync();
+            _pool = await PoolService.Get(state.User.Identity.Name, out userIndex);
         }
+        else
+        {
+            _pool = await PoolService.Get("", out userIndex);
+        }
+        EditContext = new EditContext(_pool);
+        //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
 
-        private async void edit()
-{
-            submited = false;
+        await base.OnInitializedAsync();
+    }
+
+    private async void edit()
+    {
+        submited = false;
+    }
+    private async void shipit()
+    {
+        var s = state.User.Claims.ToList();
+        PoolService.Put(_pool, state.User.Identity.Name, userIndex);
+        submited = true;
+    }
+
+
 }
-        private async void shipit()
-        {
-
-            PoolService.Put(_pool, state.User.Identity.Name, userIndex);
-            submited = true;
-        }
-   }

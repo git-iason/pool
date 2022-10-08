@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="Google.Apis.Sheets.v4" />
+    <None Remove="Microsoft.AspNetCore.Authentication.Google" />
   </ItemGroup>
   <ItemGroup>
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
@@ -21,6 +22,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.9" />
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.57.0.2727" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.9" />
   </ItemGroup>
 
 </Project>

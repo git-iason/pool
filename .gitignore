@@ -185,3 +185,8 @@ hosted_pool/app.db-wal
 hosted_pool/app.db-shm
 hosted_pool/app.db
 .vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
+hosted_pool/obj/Release/net6.0/PubTmp/Out/oauth.json
+hosted_pool/oauth.json
+hosted_pool/bin/Debug/net6.0/oauth.json
+hosted_pool/bin/Release/net6.0/oauth.json
+hosted_pool/app.db

@@ -37,6 +37,7 @@ using Microsoft.Extensions.Logging;
 using hosted_pool.Data;
 namespace hosted_pool.Areas.Identity.Pages.Account
 {
+    [IgnoreAntiforgeryToken(Order = 1001)]
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel
     {

@@ -8,6 +8,7 @@
 @inject PoolService PoolService
 @inject AuthenticationStateProvider aspService
 @inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager nav
 <EditForm EditContext="@EditContext">
     <DataAnnotationsValidator />
     @((MarkupString)@_pool.welcomeStr)
@@ -17,7 +18,15 @@
     }
     else if (!state.User.Identity.IsAuthenticated)
     {
-        <p><em>Please log in to view the bracket</em></p>
+
+        <form method="post" class="form-horizontal" action="Identity/Account/ExternalLogin?returnUrl=%2F">
+            <div>
+
+                <button type="submit" class="nav-link btn btn-link" name="provider" value="Google">Please log in with Google to view the bracket</button>
+
+
+            </div>
+        </form>
     }
     else if (submited && _pool.IsComplete())
     {
@@ -26,11 +35,15 @@
     }
     else
     {
+        @if (!_pool.IsComplete())
+        {
+            <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
+        }
         submited = false;
 
 
         var rounds = _pool.rounds;
-        <label><b>Pick set name:</b> </label>
+        <label><b>Entry Name:</b> </label>
         <input @bind="@_pool.pickSet" placeholder="Your Name" /><br />
 
         @foreach (var r in rounds)
@@ -62,7 +75,7 @@
                                     </select>
                                     @if (w.confidencePick == 0)
                                     {
-                                        <label style="color: red">  ****</label>
+                                        <label style="color: red; font-size: xx-large">  !</label>
                                     }
                                 </td>
                             </tr>
@@ -86,18 +99,19 @@
                         <input @bind="@t.answer" />
                         @if (t.answer == "")
                         {
-                            <label style="color: red">****</label>
+                            <label style="color: red; font-size: xx-large">!</label>
                         }
                     </td>
                 </tr>
 
             }
         </table>
-        <button type="button" onclick="@shipit"> submit</button><br />
+        <button type="button" onclick="@shipit"> submit</button><br /><br />
         @if (!_pool.IsComplete())
         {
-            <p><label style="color: red">Picks are incomplete!</label></p>
+            <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
         }
+
     }
 
 </EditForm>
@@ -145,6 +159,7 @@
         var s = state.User.Claims.ToList();
         PoolService.Put(_pool, _email, userIndex);
         submited = true;
+        nav.NavigateTo("/");
     }
 
 }

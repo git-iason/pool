@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider aspService
-<PageTitle>hosted_pool</PageTitle>
+<PageTitle>Waldarry Pools</PageTitle>
 
 <div class="page">
     @*<div class="sidebar">
@@ -21,7 +21,16 @@
                     </form>
                 </Authorized>
                 <NotAuthorized>
-                    <a href="Identity/Account/Login">Log in</a>
+                    @*<a href="Identity/Account/Login">Log in</a>*@
+
+                    <form  method="post" class="form-horizontal" action="Identity/Account/ExternalLogin?returnUrl=%2F">
+                        <div>
+                            
+                                <button type="submit" class="nav-link btn btn-link" name="provider" value="Google">Login with Google</button>
+                                
+                            
+                        </div>
+                    </form>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
@@ -34,15 +43,16 @@
 @code
 {
     public string _name = "";
-        private AuthenticationState state;
-        protected override async Task OnInitializedAsync()
+    private AuthenticationState state;
+    protected override async Task OnInitializedAsync()
+    {
+        state = await aspService.GetAuthenticationStateAsync();
+        
+        if (state.User.Identity.IsAuthenticated)
         {
-            state = await aspService.GetAuthenticationStateAsync();
-            if (state.User.Identity.IsAuthenticated)
-            {
-                var name = state.User.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Name).Value.ToString();
-                var name_parts = name.Split(".");
-                _name = string.Join(" ", name_parts);
-            }
+            var name = state.User.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Name).Value.ToString();
+            var name_parts = name.Split(".");
+            _name = string.Join(" ", name_parts);
         }
     }
+}

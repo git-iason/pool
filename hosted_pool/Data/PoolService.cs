@@ -1,19 +1,16 @@
-﻿using System;
-using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource.GetRequest;
-using System.IO;
+﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
-using Google.Apis.Auth.OAuth2;
 using Google.Apis.Sheets.v4.Data;
 using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource;
-using System.Reflection.Metadata;
 
 namespace hosted_pool.Data
 {
-	public class PoolService
+    public class PoolService
 	{
         private SheetsService _service = null;
         private const string _docId = "1o8I88rUZBz9cEOSk9EJNuz654Yl8Ne4qLGS52-ejDMI";
+        public string FullName { get; set; } = "";
 		public PoolService()
 		{
             var jsonCredsContent = System.IO.File.ReadAllText("choice_secret.json");
@@ -26,6 +23,7 @@ namespace hosted_pool.Data
             });
         }
 
+      
         public Task<Pool> Get(string user, out int userIndex)
         {
             var pool = GetPool();
@@ -70,9 +68,43 @@ namespace hosted_pool.Data
             var response = request.Execute();
             values = response.Values;
             var res = FromSheetsValues(values);
+            res.pickSet = FullName;
             return res;
         }
+        public void PutProjection(Pool pool, string user)
+        {
+            var c1 = ToProjectionRowHeader(pool);
+            var pvr = new ValueRange();
+            pvr.Values = c1;
+            var creq = _service.Spreadsheets.Values.Update(pvr, _docId, $"mlb_overview!R1C1:R80C1");
+            creq.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
+            var cresp = creq.Execute();
+            Console.WriteLine(cresp);
 
+            IList<IList<object>> values = null;
+
+            SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
+            var range = $"mlb_overview!R1C1:R80C50";
+
+
+            var request = _googleSheetValues.Get(_docId, range);
+            var response = request.Execute();
+            values = response.Values;
+
+
+            var userIndex = GetUserColumnProjection(values, user);
+            var res = ToProjectionSheetValues(pool, user);
+
+
+            var vr = new ValueRange();
+            vr.Values = res;
+
+            var put_req = _service.Spreadsheets.Values.Update(vr, _docId, $"mlb_overview!R1C{userIndex + 1}:R80C{userIndex + 2}");
+            put_req.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
+            var put_resp = put_req.Execute();
+            Console.WriteLine(put_resp);
+
+        }
         public void Put(Pool pool, string user, int userIndex)
         {
             var res = ToSheetsValues(pool, user, userIndex);
@@ -95,8 +127,15 @@ namespace hosted_pool.Data
             var response = request.Execute();
             Console.WriteLine(response);
 
+            PutProjection(pool, user);
+
         }
 
+      
+        public void PutUserData(string name, string user_name, string email)
+        {
+            FullName = name;
+        }
         private static Pool FromSheetsValues(IList<IList<object>> values)
         {
             var res = new Pool();
@@ -197,6 +236,85 @@ namespace hosted_pool.Data
             foreach(var t in pool.tiebreakers)
             {
                 inner = new List<object> { t.name, t.answer };
+                res.Add(inner);
+            }
+
+            return res;
+        }
+
+        private int GetUserColumnProjection(IList<IList<object>> values, string user)
+        {
+            var userIndex = 0;
+            if (values == null || values.Count <= 0) { 
+
+            }
+            else{
+                userIndex = values[0].Count;
+                // get user index
+                for (var c = 0; c < values[0].Count(); c++)
+                {
+                    if (values[0][c].ToString() == user)
+                    {
+                        userIndex = c;
+                        break;
+                    }
+                }
+            }
+            return userIndex;
+        }
+
+        private static List<IList<object>> ToProjectionSheetValues(Pool pool, string user)
+        {
+            var res = new List<IList<object>>();
+            var inner = new List<object> { user};
+            res.Add(inner);
+            inner = new List<object> { pool.pickSet };
+            res.Add(inner);
+            inner = new List<object> { "No" };
+            res.Add(inner);
+            foreach (var r in pool.rounds)
+            {
+                foreach (var g in r.games)
+                {
+                    foreach (var t in g.possibleWinners)
+                    {
+                        inner = new List<object> {t.confidencePick};
+                        res.Add(inner);
+                    }
+                }
+            }
+            foreach (var t in pool.tiebreakers)
+            {
+                inner = new List<object> { t.answer };
+                res.Add(inner);
+            }
+
+            return res;
+        }
+
+        private static List<IList<object>> ToProjectionRowHeader(Pool pool)
+        {
+            var res = new List<IList<object>>();
+            var inner = new List<object> { "User" };
+            res.Add(inner);
+            inner = new List<object> { "Set Name"};
+            res.Add(inner);
+            inner = new List<object> { "Paid" };
+            res.Add(inner);
+            foreach (var r in pool.rounds)
+            {
+                foreach (var g in r.games)
+                {
+                    foreach (var t in g.possibleWinners)
+                    {
+                        inner = new List<object> { t.name};
+                        res.Add(inner);
+                    }
+                }
+            }
+            foreach (var t in pool.tiebreakers)
+            {
+                inner = new List<object> { t.question };
                 res.Add(inner);
             }
 

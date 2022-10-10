@@ -71,7 +71,40 @@ namespace hosted_pool.Data
             res.pickSet = FullName;
             return res;
         }
+        public void PutProjection(Pool pool, string user)
+        {
+            var c1 = ToProjectionRowHeader(pool);
+            var pvr = new ValueRange();
+            pvr.Values = c1;
+            var creq = _service.Spreadsheets.Values.Update(pvr, _docId, $"mlb_overview!R1C1:R80C1");
+            creq.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
+            var cresp = creq.Execute();
+            Console.WriteLine(cresp);
 
+            IList<IList<object>> values = null;
+
+            SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
+            var range = $"mlb_overview!R1C1:R80C50";
+
+
+            var request = _googleSheetValues.Get(_docId, range);
+            var response = request.Execute();
+            values = response.Values;
+
+
+            var userIndex = GetUserColumnProjection(values, user);
+            var res = ToProjectionSheetValues(pool, user);
+
+
+            var vr = new ValueRange();
+            vr.Values = res;
+
+            var put_req = _service.Spreadsheets.Values.Update(vr, _docId, $"mlb_overview!R1C{userIndex + 1}:R80C{userIndex + 2}");
+            put_req.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
+            var put_resp = put_req.Execute();
+            Console.WriteLine(put_resp);
+
+        }
         public void Put(Pool pool, string user, int userIndex)
         {
             var res = ToSheetsValues(pool, user, userIndex);
@@ -94,8 +127,11 @@ namespace hosted_pool.Data
             var response = request.Execute();
             Console.WriteLine(response);
 
+            PutProjection(pool, user);
+
         }
 
+      
         public void PutUserData(string name, string user_name, string email)
         {
             FullName = name;
@@ -200,6 +236,85 @@ namespace hosted_pool.Data
             foreach(var t in pool.tiebreakers)
             {
                 inner = new List<object> { t.name, t.answer };
+                res.Add(inner);
+            }
+
+            return res;
+        }
+
+        private int GetUserColumnProjection(IList<IList<object>> values, string user)
+        {
+            var userIndex = 0;
+            if (values == null || values.Count <= 0) { 
+
+            }
+            else{
+                userIndex = values[0].Count;
+                // get user index
+                for (var c = 0; c < values[0].Count(); c++)
+                {
+                    if (values[0][c].ToString() == user)
+                    {
+                        userIndex = c;
+                        break;
+                    }
+                }
+            }
+            return userIndex;
+        }
+
+        private static List<IList<object>> ToProjectionSheetValues(Pool pool, string user)
+        {
+            var res = new List<IList<object>>();
+            var inner = new List<object> { user};
+            res.Add(inner);
+            inner = new List<object> { pool.pickSet };
+            res.Add(inner);
+            inner = new List<object> { "No" };
+            res.Add(inner);
+            foreach (var r in pool.rounds)
+            {
+                foreach (var g in r.games)
+                {
+                    foreach (var t in g.possibleWinners)
+                    {
+                        inner = new List<object> {t.confidencePick};
+                        res.Add(inner);
+                    }
+                }
+            }
+            foreach (var t in pool.tiebreakers)
+            {
+                inner = new List<object> { t.answer };
+                res.Add(inner);
+            }
+
+            return res;
+        }
+
+        private static List<IList<object>> ToProjectionRowHeader(Pool pool)
+        {
+            var res = new List<IList<object>>();
+            var inner = new List<object> { "User" };
+            res.Add(inner);
+            inner = new List<object> { "Set Name"};
+            res.Add(inner);
+            inner = new List<object> { "Paid" };
+            res.Add(inner);
+            foreach (var r in pool.rounds)
+            {
+                foreach (var g in r.games)
+                {
+                    foreach (var t in g.possibleWinners)
+                    {
+                        inner = new List<object> { t.name};
+                        res.Add(inner);
+                    }
+                }
+            }
+            foreach (var t in pool.tiebreakers)
+            {
+                inner = new List<object> { t.question };
                 res.Add(inner);
             }
 

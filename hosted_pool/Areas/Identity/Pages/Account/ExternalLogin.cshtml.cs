@@ -35,6 +35,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 using hosted_pool.Data;
+using Newtonsoft.Json.Linq;
+
 namespace hosted_pool.Areas.Identity.Pages.Account
 {
     [IgnoreAntiforgeryToken(Order = 1001)]
@@ -188,9 +190,15 @@ namespace hosted_pool.Areas.Identity.Pages.Account
             {
 
                 var userEmail = info.Principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
-                var userName = info.Principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value.ToString();
+                var userNameClaim = info.Principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
+                var userName = "John Doe";
+                if(userNameClaim != null)
+                {
+                    userName = userNameClaim.Value.ToString();
+                }
                 var userSplit = userName.Split(" ");
                 var userCombined = string.Join(".", userSplit);
+                if (userCombined == "") userCombined = "Johnny Does";
                 var user = new IdentityUser { UserName = userCombined, Email = userEmail, NormalizedUserName=userName };
                 var resultCreateUser = await _userManager.CreateAsync(user);
                 if (resultCreateUser.Succeeded)

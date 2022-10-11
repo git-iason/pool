@@ -39,6 +39,10 @@
         {
             <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
         }
+        @if(_poolClosed)
+        {
+            <p><label style="color: red">@_poolMessage</label></p>
+        }
         submited = false;
 
 
@@ -66,7 +70,7 @@
                             <tr>
                                 <td style="font-size: larger">@text</td>
                                 <td>
-                                    <select @bind="@w.confidencePickStr">
+                                    <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
                                         <option value="Select" selected disabled="disabled">Confidence</option>
                                         @for (var c = 1; c <= g.possibleWinners.Count(); c++)
                                         {
@@ -123,6 +127,8 @@
     private int userIndex = -1;
     public bool submited { get; set; } = false;
     public string _email = "";
+    private string _poolMessage = "";
+    private bool _poolClosed = false;
     protected override async Task OnInitializedAsync()
     {
         state = await aspService.GetAuthenticationStateAsync();
@@ -135,7 +141,9 @@
             var name = state.User.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Name).Value.ToString();
 
             var name_parts = name.Split(".");
-            var new_name = string.Join(" ", name_parts);
+            var first = name_parts.Length >= 1 ? name_parts[0] : "No Name";
+            var last = name_parts.Length >= 2 ? name_parts[1] : "NoLastName";
+            var new_name = $"{first} {last}";
             _pool = await PoolService.Get(_email, out userIndex);
             if (_pool.pickSet == "")
                 _pool.pickSet = new_name;
@@ -147,6 +155,10 @@
         EditContext = new EditContext(_pool);
         //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
 
+        if(_pool != null)
+        {
+            _poolClosed = !_pool.isLive(out _poolMessage);
+        }
         await base.OnInitializedAsync();
     }
 

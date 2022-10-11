@@ -47,12 +47,15 @@
     protected override async Task OnInitializedAsync()
     {
         state = await aspService.GetAuthenticationStateAsync();
-        
+
         if (state.User.Identity.IsAuthenticated)
         {
+
             var name = state.User.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Name).Value.ToString();
             var name_parts = name.Split(".");
-            _name = string.Join(" ", name_parts);
+            var first = name_parts.Length >= 1 ? name_parts[0] : "No Name";
+            var last = name_parts.Length >= 2 ? name_parts[1] : "NoLastName";
+            _name = $"{first} {last}";
         }
     }
 }

@@ -196,10 +196,11 @@ namespace hosted_pool.Areas.Identity.Pages.Account
                 {
                     userName = userNameClaim.Value.ToString();
                 }
-                var userSplit = userName.Split(" ");
+                var userSplit = userName.Split(" ").ToList();
+                userSplit.Add(userEmail);
                 var userCombined = string.Join(".", userSplit);
-                if (userCombined == "") userCombined = "Johnny Does";
-                var user = new IdentityUser { UserName = userCombined, Email = userEmail, NormalizedUserName=userName };
+
+                var user = new IdentityUser { UserName = userCombined, Email = userEmail, LockoutEnabled = false};
                 var resultCreateUser = await _userManager.CreateAsync(user);
                 if (resultCreateUser.Succeeded)
                 {
@@ -212,7 +213,7 @@ namespace hosted_pool.Areas.Identity.Pages.Account
                     }
                 }
 
-                return Page();
+                return LocalRedirect(returnUrl);
 
             }
 

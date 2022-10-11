@@ -109,6 +109,9 @@ namespace hosted_pool.Data
     }
     public class Pool
     {
+        public DateTime start { get; set; } = new DateTime();
+        public DateTime end { get; set; } = new DateTime();
+
         public string poolName { get; set; } = "";
         public string welcomeStr { get; set; } = "";
         public string pickSet { get; set; } = "";
@@ -118,6 +121,14 @@ namespace hosted_pool.Data
 
         private List<TieBreaker> _tiebreakers = new List<TieBreaker>();
         public IReadOnlyCollection<TieBreaker> tiebreakers => _tiebreakers.AsReadOnly();
+
+
+        public Pool()
+        {
+            start = DateTime.Now.AddHours(+1);
+            end = DateTime.Now.AddHours(+3);
+        }
+
         public void AddRound(Round round)
         {
             round.associatedPool = this;
@@ -179,6 +190,23 @@ namespace hosted_pool.Data
             }
 
             return true;
+        }
+
+        public bool isLive(out string message)
+        {
+            var res = false;
+            message = "Boom";
+
+            if( DateTime.Now < start)
+            {
+                message = $"The pool is not open yet, check back on {start}";
+            }
+            else if(DateTime.Now > end)
+            {
+                message = $"Sorry, the pool closed as of {end}";
+            }
+            else { res = true; }
+            return res;
         }
     }
 

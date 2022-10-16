@@ -9,7 +9,7 @@ namespace hosted_pool.Data
     public class PoolService
 	{
         private SheetsService _service = null;
-        private const string _docId = "1o8I88rUZBz9cEOSk9EJNuz654Yl8Ne4qLGS52-ejDMI";
+        private const string _docId = "16wm1twZlW0WMp5X6CUVRTFHp_H6NHULO-RaO-z6h8Rs";
         public string FullName { get; set; } = "";
 		public PoolService()
 		{
@@ -46,7 +46,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"mlbpicks!R1C1:R80C50";
+            var range = $"nflpicks!R1C1:R80C50";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -61,7 +61,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"mlb!R1C1:R25C25";
+            var range = $"nfl!R1C1:R25C25";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -76,7 +76,7 @@ namespace hosted_pool.Data
             var c1 = ToProjectionRowHeader(pool);
             var pvr = new ValueRange();
             pvr.Values = c1;
-            var creq = _service.Spreadsheets.Values.Update(pvr, _docId, $"mlb_overview!R1C1:R80C1");
+            var creq = _service.Spreadsheets.Values.Update(pvr, _docId, $"nfl_overview!R1C1:R80C1");
             creq.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
             var cresp = creq.Execute();
             Console.WriteLine(cresp);
@@ -84,7 +84,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"mlb_overview!R1C1:R80C50";
+            var range = $"nfl_overview!R1C1:R80C50";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -99,7 +99,7 @@ namespace hosted_pool.Data
             var vr = new ValueRange();
             vr.Values = res;
 
-            var put_req = _service.Spreadsheets.Values.Update(vr, _docId, $"mlb_overview!R1C{userIndex + 1}:R80C{userIndex + 2}");
+            var put_req = _service.Spreadsheets.Values.Update(vr, _docId, $"nfl_overview!R1C{userIndex + 1}:R80C{userIndex + 2}");
             put_req.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
             var put_resp = put_req.Execute();
             Console.WriteLine(put_resp);
@@ -117,7 +117,7 @@ namespace hosted_pool.Data
 
 
 
-            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"mlbpicks!R1C{userIndex+1}:R80C{userIndex + 2}");
+            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"nflpicks!R1C{userIndex+1}:R80C{userIndex + 2}");
 
 
 

@@ -192,3 +192,5 @@ hosted_pool/bin/Release/net6.0/oauth.json
 hosted_pool/app.db
 hosted_pool/app.db
 .vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
+.vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
+hosted_pool/app.db-wal

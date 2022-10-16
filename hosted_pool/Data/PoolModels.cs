@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Xml.Linq;
 using hosted_pool.Pages;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace hosted_pool.Data
 {
@@ -63,6 +65,7 @@ namespace hosted_pool.Data
         public int num { get; set; } = 0;
     }
     public class Round
+
     {
         public string name { get; set; } = "";
         private List<Game> _games = new List<Game>();
@@ -125,9 +128,12 @@ namespace hosted_pool.Data
 
         public Pool()
         {
-            start = DateTime.Now.AddHours(+1);
-            end = DateTime.Now.AddHours(+3);
+            start = DateTime.Now.AddHours(-1);
+            end = DateTime.Now.AddHours(+1);
         }
+
+        public string Serialize() => JsonSerializer.Serialize(this);
+        public static Pool Deserailize(string pool) => JsonSerializer.Deserialize<Pool>(pool);
 
         public void AddRound(Round round)
         {
@@ -150,8 +156,39 @@ namespace hosted_pool.Data
             return res;
         }
 
+
+        public string GetPicksJson() => JsonSerializer.Serialize(GetPicks());
+
+        public Dictionary<string, string> GetPicks()
+        {
+            var res = new Dictionary<string, string>();
+
+            foreach (var round in rounds)
+            {
+                foreach (var game in round.games)
+                {
+                    foreach (var possible in game.possibleWinners)
+                    {
+                        res.Add(possible.id, possible.confidencePickStr);
+                    }
+                }
+            }
+            foreach (var t in tiebreakers)
+            {
+                res.Add(t.name, t.answer);
+            }
+            res.Add("name", pickSet);
+            return res;
+        }
+        public void LoadPicks(string picksJson)
+        {
+            var picksDictionary = JsonSerializer.Deserialize<Dictionary<string, string>>(picksJson);
+            LoadPicks(picksDictionary);
+        }
         public void LoadPicks(Dictionary<string,string> picks)
         {
+            if (picks == null) return;
+
             foreach(var round in rounds)
             {
                 foreach(var game in round.games)
@@ -170,6 +207,10 @@ namespace hosted_pool.Data
                 var success = picks.TryGetValue(t.name, out val);
                 t.answer = val;
             }
+            string set = "";
+            picks.TryGetValue("name", out set);
+            pickSet = set;
+
         }
 
         public bool IsComplete()

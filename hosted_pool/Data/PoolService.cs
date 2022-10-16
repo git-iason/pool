@@ -2,6 +2,8 @@
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+
+
 using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource;
 
 namespace hosted_pool.Data
@@ -31,28 +33,27 @@ namespace hosted_pool.Data
             userIndex = -1;
             if (user != "")
             {
-                var picks = GetPicks(user, out userIndex, out pickSet);
+                var picks = GetPicks(user, out userIndex);
                 if (picks != null)
                 {
                     pool.LoadPicks(picks);
-                    pool.pickSet = pickSet;
                 }
             }
             return Task.FromResult(pool);
         }
 
-        private Dictionary<string, string> GetPicks(string user, out int userIndex, out string pickSet)
+        private string GetPicks(string user, out int userIndex)
         {
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nflpicks!R1C1:R80C50";
+            var range = $"nflpicks";
 
 
             var request = _googleSheetValues.Get(_docId, range);
             var response = request.Execute();
             values = response.Values;
-            var res = GetPicksDictionary(values, user, out userIndex, out pickSet);
+            var res = GetPicksJson(values, user, out userIndex);
             return res;
         }
 
@@ -117,7 +118,7 @@ namespace hosted_pool.Data
 
 
 
-            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"nflpicks!R1C{userIndex+1}:R80C{userIndex + 2}");
+            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"nflpicks!R{userIndex + 1}C1:R{userIndex + 1}C2");
 
 
 
@@ -182,63 +183,35 @@ namespace hosted_pool.Data
             return res;
         }
 
-        private static Dictionary<string, string> GetPicksDictionary(IList<IList<object>> values, string user, out int userIndex, out string pickSet)
+        private static string GetPicksJson(IList<IList<object>> values, string user, out int userRow)
         {
-            var res = new Dictionary<string, string>();
-            pickSet = "";
+            var res = "";
             if(values == null || values.Count<=0)
             {
-                userIndex = 0;
+                userRow = 0;
                 return null;
             }
-            userIndex = values[0].Count;
-            // get user index
-           for(var c = 0; c< values[0].Count(); c++)
+            userRow = values.Count;
+            // get user row
+           for(var c = 0; c< values.Count(); c++)
            {
-                if (values[0][c].ToString() == user)
+                if (values[c][0].ToString() == user)
                 {
-                    userIndex = c;
+                    userRow = c;
                     break;
                 }
            }
-           if (userIndex == values[0].Count) return null;
+           if (userRow == values.Count) return null;
 
-           pickSet = values[1][userIndex].ToString();
-           foreach(var pick in values.Skip(2))
-           {
-                var key = pick[userIndex].ToString();
-                var val = pick.Count > userIndex + 1?pick[userIndex + 1].ToString():"";
-                res.Add(key, val);
-            }
-
-
-
-            return res;
+           res = values[userRow][1].ToString();
+           
+           return res;
         }
         private static List<IList<object>> ToSheetsValues(Pool pool, string user, int userIndex)
         {
             var res = new List<IList<object>>();
-            var inner = new List<object> { user, "." };
+            var inner = new List<object> { user, pool.GetPicksJson()};
             res.Add(inner);
-            inner = new List<object> { pool.pickSet, "confidence" };
-            res.Add(inner);
-            foreach (var r in pool.rounds)
-            {
-                foreach(var g in r.games)
-                {
-                    foreach(var t in g.possibleWinners)
-                    {
-                        inner = new List<object> {t.id, t.confidencePick };
-                        res.Add(inner);
-                    }
-                }
-            }
-            foreach(var t in pool.tiebreakers)
-            {
-                inner = new List<object> { t.name, t.answer };
-                res.Add(inner);
-            }
-
             return res;
         }
 

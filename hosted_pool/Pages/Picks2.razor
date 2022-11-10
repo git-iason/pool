@@ -5,6 +5,11 @@
 @using hosted_pool.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc
+@using System.Linq;
+@using PayPal.Core;
+@using PayPal.v1.Payments;
+@using BraintreeHttp;
+
 @inject PoolService PoolService
 @inject AuthenticationStateProvider aspService
 @inject SignInManager<IdentityUser> SignInManager
@@ -111,6 +116,7 @@
             }
         </table>
         <button type="button" onclick="@shipit"> submit</button><br /><br />
+        <button type="button" onclick="@transactions"> trasact</button>
         @if (!_pool.IsComplete())
         {
             <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
@@ -173,5 +179,36 @@
         submited = true;
         nav.NavigateTo("/");
     }
+    private async void transactions()
+    {
+        var environment = new SandboxEnvironment("AazIGtNDqKziKjWdc6YkHe6o4tFi9vhvkINe-07wgGyT5PYeXwh3TwtS5lmrbe1pY0nJdVcDMnsGWE5N",
+            "EOMvGwOtcSh3DiXfQaJzvQ5EB3UsAHSZIqZiXTeeFycDaGr1ulL17SAs5fkW1sxGWG5RDWFxDdw1SrUD");
+        //Live Environment
+        //    var environment = new LiveEnvironment("<AS3xiP4J2hkYnhInmBSlTqVi2rokm1GRnNCKiYSjyvbWmC-J0SoSKLDtNoVfeK9H5lpKGVVfs7ObwQAB",
+        //"ELnWb0TCcW6NiHEIq4lXDgr-yVUezrxZXk7MnGKfHvplqiGuQhVg2SmCtQY3uZFoWDtbJOSLIDOHzdmt");
 
+        BraintreeHttp.HttpClient client = new PayPalHttpClient(environment);
+
+        var request = new PaymentListRequest()
+                .Count(2);
+
+        //request.RequestUri = new System.Uri("https://api.sandbox.paypal.com");
+        try
+        {
+            var response = await client.Execute(request);
+            var code = response.StatusCode;
+            //.ContinueWith((resp) =>
+            //{
+            //    var statusCode = resp.Status;
+            //});
+
+            //WebProfile result = response.Result<WebProfile>();
+        }
+        catch (BraintreeHttp.HttpException httpException)
+        {
+            var statusCode = httpException.StatusCode;
+            var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
+        }
+
+    }
 }

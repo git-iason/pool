@@ -62,7 +62,7 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nfl!R1C1:R25C25";
+            var range = $"nfl";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -141,44 +141,76 @@ namespace hosted_pool.Data
         {
             var res = new Pool();
 
-            if(values.Count() >= 2)
+            var stopString = "rounds";
+            var c = 0;
+            var val = values[0];
+            var fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            while (!fieldName.Equals(stopString))
             {
-                res.welcomeStr = values[0][1].ToString();
-                //res.poolName = values[1][1].ToString();
-            }
 
-
-            var pickNum = 0;
-            foreach (var v in values.Skip(2))
-            {
-                if (v.Count() == 0) continue;
-                var rnd = new Round { name = v[0].ToString() };
-                var game = new Game { };
-                if (v[0].ToString().Contains("Tiebreaker"))
+                if (fieldName.Equals("title"))
                 {
-                    res.AddTiebreaker(v[0].ToString(), v[1].ToString());
+                    res.poolName = val[1].ToString();
                 }
-                else
+                if (fieldName.Equals("welcome"))
                 {
-                    foreach (var l in v.Skip(1))
+                    res.welcomeStr = val[1].ToString();
+                }
+                if (fieldName.Equals("start"))
+                {
+                    var timeString = val[1].ToString();
+                    res.start = DateTime.Parse(timeString);
+                }
+                if (fieldName.Equals("lock"))
+                {
+                    var timeString = val[1].ToString();
+                    res.end = DateTime.Parse(timeString);
+                }
+                val = values[++c];
+                
+                fieldName = val.Count > 0?val[0].ToString().ToLower():"";
+            }
+            var roundDictionary = new Dictionary<string, Round>();
+            foreach(var round in val.Skip(1))
+            {
+                var roundName = round.ToString();
+                var rnd = new Round { name = roundName };
+                roundDictionary.Add(rnd.name.ToLower(), rnd);
+                res.AddRound(rnd);
+            }
+            stopString = "tiebreakers";
+            val = values[++c];
+            fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            while (!fieldName.Equals(stopString))
+            {
+                Round round;
+                var found = roundDictionary.TryGetValue(fieldName, out round);
+                if (found)
+                {
+                    var game = new Game();
+                    foreach(var p in val.Skip(1))
                     {
-                        var val = l.ToString();
-                        if (val != "")
-                        {
-                            game.AddPosssible(new Pick { name = val });
-                        }
-                        else
-                        {
-                            rnd.AddGame(game);
-                            game = new Game { };
-                        }
+                        game.AddPosssible(new Pick { name = p.ToString()});
                     }
-                    rnd.AddGame(game);
-                    res.AddRound(rnd);
+                    round.AddGame(game);
                 }
+                val = values[++c];
+                fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
             }
 
-           
+            stopString = "";
+            val = values[++c];
+            fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            while (!fieldName.Equals(stopString))
+            {
+                if(val.Count >= 2)
+                    res.AddTiebreaker(fieldName, val[1].ToString());
+
+                if (c + 1 >= values.Count) break;
+                val = values[++c];
+                fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            }
+
 
             return res;
         }

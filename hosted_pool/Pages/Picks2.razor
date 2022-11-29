@@ -1,5 +1,5 @@
-﻿@page "/"
-
+﻿@*@page "/{poolId:int?}"*@
+@page "/"
 <PageTitle>Pool</PageTitle>
 
 @using hosted_pool.Data
@@ -39,7 +39,7 @@
         {
             <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
         }
-        @if(_poolClosed)
+        @if (_poolClosed)
         {
             <p><label style="color: red">@_poolMessage</label></p>
         }
@@ -79,7 +79,7 @@
                                     </select>
                                     @if (w.confidencePick == 0)
                                     {
-                                        <label style="color: red; font-size: xx-large">  !</label>
+                                        <label style="color: red; font-size: x-large">  !</label>
                                     }
                                 </td>
                             </tr>
@@ -103,7 +103,7 @@
                         <input @bind="@t.answer" />
                         @if (t.answer == "")
                         {
-                            <label style="color: red; font-size: xx-large">!</label>
+                            <label style="color: red; font-size: x-large">!</label>
                         }
                     </td>
                 </tr>
@@ -131,6 +131,8 @@
     private bool _poolClosed = false;
     protected override async Task OnInitializedAsync()
     {
+        PoolName = PoolName ?? "nfl";
+
         state = await aspService.GetAuthenticationStateAsync();
 
         var user = state.User.ToString();
@@ -144,20 +146,24 @@
             var first = name_parts.Length >= 1 ? name_parts[0] : "No Name";
             var last = name_parts.Length >= 2 ? name_parts[1] : "NoLastName";
             var new_name = $"{first} {last}";
-            _pool = await PoolService.Get(_email, out userIndex);
-            if (_pool.pickSet == "")
+            _pool = await PoolService.Get(PoolName, _email, out userIndex);
+            if (_pool != null  && _pool.pickSet == "")
                 _pool.pickSet = new_name;
         }
         else
         {
-            _pool = await PoolService.Get("", out userIndex);
+            _pool = await PoolService.Get(PoolName, "", out userIndex);
         }
-        EditContext = new EditContext(_pool);
+
         //EditContext.OnFieldChanged += EditContext_OnFieldChanged;
 
-        if(_pool != null)
+        if (_pool != null)
         {
+            EditContext = new EditContext(_pool);
             _poolClosed = !_pool.isLive(out _poolMessage);
+        }
+        else
+        {
         }
         await base.OnInitializedAsync();
     }
@@ -169,9 +175,17 @@
     private async void shipit()
     {
         var s = state.User.Claims.ToList();
-        PoolService.Put(_pool, _email, userIndex);
+        PoolService.Put(PoolName, _pool, _email, userIndex);
         submited = true;
-        nav.NavigateTo("/");
+        nav.NavigateTo($"/?pool={PoolName}");
     }
 
+
+
+    [SupplyParameterFromQuery(Name = "pool")]
+    [Parameter]
+    public string PoolName { get; set; } = "";
+
+    //[Parameter]
+    //public int PoolId { get; set; } = 0;
 }

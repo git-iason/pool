@@ -26,14 +26,14 @@ namespace hosted_pool.Data
         }
 
       
-        public Task<Pool> Get(string user, out int userIndex)
+        public Task<Pool> Get(string pool_name, string user, out int userIndex)
         {
-            var pool = GetPool();
+            var pool = GetPool(pool_name);
             var pickSet = "";
             userIndex = -1;
-            if (user != "")
+            if (user != "" && pool != null)
             {
-                var picks = GetPicks(user, out userIndex);
+                var picks = GetPicks(pool_name, user, out userIndex);
                 if (picks != null)
                 {
                     pool.LoadPicks(picks);
@@ -42,12 +42,12 @@ namespace hosted_pool.Data
             return Task.FromResult(pool);
         }
 
-        private string GetPicks(string user, out int userIndex)
+        private string GetPicks(string pool_name, string user, out int userIndex)
         {
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nflpicks";
+            var range = $"{pool_name}_picks";
 
 
             var request = _googleSheetValues.Get(_docId, range);
@@ -57,22 +57,31 @@ namespace hosted_pool.Data
             return res;
         }
 
-        private Pool GetPool()
+        private Pool GetPool(string pool_name)
         {
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nfl";
+            var range = $"{pool_name}";
 
 
             var request = _googleSheetValues.Get(_docId, range);
-            var response = request.Execute();
-            values = response.Values;
-            var res = FromSheetsValues(values);
-            res.pickSet = FullName;
-            return res;
+
+            try
+            {
+                var response = request.Execute();
+                values = response.Values;
+                var res = FromSheetsValues(values);
+                res.pickSet = FullName;
+                return res;
+            }
+            catch(Google.GoogleApiException gae)
+            {
+                return new Pool { welcomeStr="<b>Pool not found</b><br>"};
+            }
+            
         }
-        public void PutProjection(Pool pool, string user)
+        public void PutProjection(string pool_name, Pool pool, string user)
         {
             var c1 = ToProjectionRowHeader(pool);
             var pvr = new ValueRange();
@@ -85,28 +94,28 @@ namespace hosted_pool.Data
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"nfl_overview!R1C1:R80C50";
+            var range = $"{pool_name}_overview";
 
 
             var request = _googleSheetValues.Get(_docId, range);
             var response = request.Execute();
             values = response.Values;
 
-
-            var userIndex = GetUserColumnProjection(values, user);
-            var res = ToProjectionSheetValues(pool, user);
-
-
+            string paid = "No";
+            var userIndex = GetUserColumnProjection(values, user, out paid);
+            var res = ToProjectionSheetValues(pool, user, paid);
+            
             var vr = new ValueRange();
             vr.Values = res;
-
-            var put_req = _service.Spreadsheets.Values.Update(vr, _docId, $"nfl_overview!R1C{userIndex + 1}:R80C{userIndex + 2}");
+            
+            var put_req = _service.Spreadsheets.Values.Update(vr, _docId, $"{pool_name}_overview!R1C{userIndex + 1}:R80C{userIndex + 2}");
             put_req.ValueInputOption = UpdateRequest.ValueInputOptionEnum.USERENTERED;
+        
             var put_resp = put_req.Execute();
             Console.WriteLine(put_resp);
 
         }
-        public void Put(Pool pool, string user, int userIndex)
+        public void Put(string pool_name, Pool pool, string user, int userIndex)
         {
             var res = ToSheetsValues(pool, user, userIndex);
             Console.WriteLine(res);
@@ -118,7 +127,7 @@ namespace hosted_pool.Data
 
 
 
-            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"nflpicks!R{userIndex + 1}C1:R{userIndex + 1}C2");
+            SpreadsheetsResource.ValuesResource.UpdateRequest request = _service.Spreadsheets.Values.Update(vr, _docId, $"{pool_name}_picks!R{userIndex + 1}C1:R{userIndex + 1}C2");
 
 
 
@@ -128,7 +137,7 @@ namespace hosted_pool.Data
             var response = request.Execute();
             Console.WriteLine(response);
 
-            PutProjection(pool, user);
+            PutProjection(pool_name, pool, user);
 
         }
 
@@ -247,9 +256,10 @@ namespace hosted_pool.Data
             return res;
         }
 
-        private int GetUserColumnProjection(IList<IList<object>> values, string user)
+        private int GetUserColumnProjection(IList<IList<object>> values, string user, out string paid)
         {
             var userIndex = 0;
+            paid = "No";
             if (values == null || values.Count <= 0) { 
 
             }
@@ -261,6 +271,7 @@ namespace hosted_pool.Data
                     if (values[0][c].ToString() == user)
                     {
                         userIndex = c;
+                        paid = values[2][c].ToString();
                         break;
                     }
                 }
@@ -268,14 +279,14 @@ namespace hosted_pool.Data
             return userIndex;
         }
 
-        private static List<IList<object>> ToProjectionSheetValues(Pool pool, string user)
+        private static List<IList<object>> ToProjectionSheetValues(Pool pool, string user, string paid)
         {
             var res = new List<IList<object>>();
             var inner = new List<object> { user};
             res.Add(inner);
             inner = new List<object> { pool.pickSet };
             res.Add(inner);
-            inner = new List<object> { "No" };
+            inner = new List<object> { paid };
             res.Add(inner);
             foreach (var r in pool.rounds)
             {

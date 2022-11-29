@@ -97,6 +97,8 @@ namespace hosted_pool.Data
             var range = $"{pool_name}_overview";
 
 
+            AddColumns(_service, _docId, range);
+
             var request = _googleSheetValues.Get(_docId, range);
             var response = request.Execute();
             values = response.Values;
@@ -335,6 +337,34 @@ namespace hosted_pool.Data
             }
 
             return res;
+        }
+
+        private Sheet GetSheet(SheetsService service, string spreadSheetId, string spreadSheetName)
+        {
+            var spreadsheet = service.Spreadsheets.Get(spreadSheetId).Execute();
+            var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == spreadSheetName);
+            return sheet;
+        }
+
+        private void AddColumns(SheetsService service, string spreadSheetId, string spreadSheetName)
+        {
+            var sheet = GetSheet(service, spreadSheetId, spreadSheetName);
+            if (sheet == null) return;
+
+            int sheetId = (int)sheet.Properties.SheetId;
+            int columnCount = (int)sheet.Properties.GridProperties.ColumnCount;
+            DimensionRange dr1 = new DimensionRange
+            {
+                SheetId = sheetId,
+                Dimension = "COLUMNS",
+                StartIndex = columnCount - 1,
+                EndIndex = columnCount
+            };
+
+            var request1 = new Request { InsertDimension = new InsertDimensionRequest { Range = dr1, InheritFromBefore = false } };
+
+            var requests = new BatchUpdateSpreadsheetRequest { Requests = new List<Request> { request1 } };
+            service.Spreadsheets.BatchUpdate(requests, spreadSheetId).Execute();
         }
     }
 }

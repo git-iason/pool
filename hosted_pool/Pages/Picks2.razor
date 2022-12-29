@@ -48,19 +48,19 @@
 
         var rounds = _pool.rounds;
         <label><b>Name:</b> </label>
-        <input @bind="@_pool.pickSet" placeholder="Your Name" /><br />
+        <input @bind="@_pool.pickSet" placeholder="Your Name" /><br /><br />
 
 
         <style>
             table {
-                border: 0px solid #dddddd;
+                border: 0px;
                 border-collapse: collapse;
                 border-spacing: 0;
                 width: 100%;
             }
 
             td, th {
-                border: 0px solid #dddddd;
+                border: 0px;
                 text-align: left;
                 padding: 5px;
                 margin: 5px;
@@ -71,12 +71,12 @@
             }*/
         </style>
         <table class="table">
-            <thead>
+            @*<thead>
                 <tr>
-                    <th width="25px">game</th>
-                    <th width="50px">confidence</th>
+                    <th width="25px"></th>
+                    <th width="50px">Confidence</th>
                 </tr>
-            </thead>
+            </thead>*@
             <tbody>
                 @{
                     var alternate = true;
@@ -93,7 +93,10 @@
                     if (r == rounds.Last()) color = "background-color: #D5D8DA";
 
 
-                    <tr style="@color"><td style="font-size: larger" colspan="2"><b>@r.name</b></td></tr>
+                    <tr style="@color">
+                        <td style="font-size: larger"><b>@r.name</b></td>
+                        <td style="font-size: larger"><b>Confidence</b></td>
+                    </tr>
 
 
                     @foreach (var g in r.games)
@@ -102,7 +105,9 @@
                         @if (r.games.Count() > 1)
                         {
                             var game_str = $"Game {game_num}";
-                            <tr style="@color"><td colspan="2"><b>@game_str</b> </td></tr>
+                            <tr style="@color">
+                                <td colspan="2"><b>@game_str</b> </td>
+                            </tr>
                         }
                         @foreach (var w in g.possibleWinners)
                         {

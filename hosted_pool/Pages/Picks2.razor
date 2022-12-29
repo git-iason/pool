@@ -50,26 +50,66 @@
         <label><b>Name:</b> </label>
         <input @bind="@_pool.pickSet" placeholder="Your Name" /><br />
 
-        @foreach (var r in rounds)
-        {
-            <b>@r.name</b>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>game</th>
-                        <th>confidence</th>
-                    </tr>
-                </thead>
-                <tbody>
+
+        <style>
+            table {
+                border: 0px solid #dddddd;
+                border-collapse: collapse;
+                border-spacing: 0;
+                width: 100%;
+            }
+
+            td, th {
+                border: 0px solid #dddddd;
+                text-align: left;
+                padding: 5px;
+                margin: 5px;
+            }
+
+            /*            tr:nth-child(even) {
+                background-color: #dddddd;
+            }*/
+        </style>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="25px">game</th>
+                    <th width="50px">confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var alternate = true;
+
+                }
+                @foreach (var r in rounds)
+                {
+                    var color = "background-color: #B0DEFE";
+                    if (alternate) color = "background-color: #FEB4B0";
+                    alternate = !alternate;
+                    var game_num = 0;
+
+
+                    if (r == rounds.Last()) color = "background-color: #D5D8DA";
+
+
+                    <tr style="@color"><td style="font-size: larger" colspan="2"><b>@r.name</b></td></tr>
+
 
                     @foreach (var g in r.games)
                     {
+                        game_num++;
+                        @if (r.games.Count() > 1)
+                        {
+                            var game_str = $"Game {game_num}";
+                            <tr style="@color"><td colspan="2"><b>@game_str</b> </td></tr>
+                        }
                         @foreach (var w in g.possibleWinners)
                         {
                             var text = $"{w.name}";
-                            <tr>
-                                <td style="font-size: larger">@text</td>
-                                <td>
+                            <tr style="@color">
+                                <td style="font-size: larger; width: 25px">@text</td>
+                                <td width="50px">
                                     <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
                                         <option value="Select" selected disabled="disabled">Confidence</option>
                                         @for (var c = 1; c <= g.possibleWinners.Count(); c++)
@@ -77,19 +117,25 @@
                                             <option value="@c">@c</option>
                                         }
                                     </select>
+                                    <span style="color: red; font-size: large">    </span>
                                     @if (w.confidencePick == 0)
                                     {
-                                        <label style="color: red; font-size: x-large">  !</label>
+                                        <span style="color: red; font-size: large">!</span>
                                     }
                                 </td>
                             </tr>
                         }
-                        <tr style="background-color: #ddd"><td colspan="2"> </td></tr>
+
+
+                    }
+                    @if (r != rounds.Last())
+                    {
+                        <tr><td colspan="2">  </td></tr>
                     }
 
-                </tbody>
-            </table>
-        }
+                }
+            </tbody>
+        </table>
         <b>Tiebeakers</b>
         <table class="table">
             @foreach (var t in _pool.tiebreakers)
@@ -100,10 +146,11 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <input @bind="@t.answer" />
+                        <input @bind="@t.answer" disabled="@_poolClosed" />
+                        <span style="color: red; font-size: large">    </span>
                         @if (t.answer == "")
                         {
-                            <label style="color: red; font-size: x-large">!</label>
+                            <span style="color: red; font-size: large">!</span>
                         }
                     </td>
                 </tr>
@@ -147,7 +194,7 @@
             var last = name_parts.Length >= 2 ? name_parts[1] : "NoLastName";
             var new_name = $"{first} {last}";
             _pool = await PoolService.Get(PoolName, _email, out userIndex);
-            if (_pool != null  && _pool.pickSet == "")
+            if (_pool != null && _pool.pickSet == "")
                 _pool.pickSet = new_name;
         }
         else

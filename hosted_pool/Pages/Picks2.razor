@@ -25,11 +25,11 @@
                 <div style="text-align:left">
                     @if (!_pool.IsComplete())
                     {
-                        <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end!</label></p>
+                        <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end.ToShortDateString() at @_pool.end.ToShortTimeString()!</label></p>
                     }
                     else
                     {
-                        <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.</label></p>
+                        <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.ToShortDateString() at @_pool.end.ToShortTimeString().</label></p>
                     }
                 </div>
             </BodyTemplate>
@@ -63,6 +63,7 @@
         }
         else if (submited && _pool.IsComplete())
         {
+            <br/>
             <p>Your picks have been submitted</p>
             <button type="button" onclick="@edit">Edit picks</button>
         }
@@ -240,7 +241,10 @@
 
     }
 
-
+    private async void HideModal()
+    {
+        await modal.HideAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -281,6 +285,7 @@
         else
         {
         }
+
         await base.OnInitializedAsync();
     }
 

@@ -5,12 +5,38 @@
 @using hosted_pool.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Components.Web
+@using BlazorBootstrap
+
 @inject PoolService PoolService
 @inject AuthenticationStateProvider aspService
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager nav
+
+
+
+
 <EditForm EditContext="@EditContext">
     <DataAnnotationsValidator />
+
+
+    <Modal @ref="modal" UseStaticBackdrop="true">
+        <BodyTemplate>
+            @if (!_pool.IsComplete())
+            {
+                <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end!</label></p>
+            }
+            else
+            {
+                <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.</label></p>
+            }
+        </BodyTemplate>
+        <FooterTemplate>
+            <Button Color="ButtonColor.Primary" @onclick="HideModal">Ok</Button>
+        </FooterTemplate>
+    </Modal>
+
+
     @((MarkupString)@_pool.welcomeStr)
     @if (_pool == null)
     {
@@ -67,16 +93,16 @@
             }
 
             /*            tr:nth-child(even) {
-                background-color: #dddddd;
-            }*/
+                    background-color: #dddddd;
+                }*/
         </style>
         <table class="table">
             @*<thead>
-                <tr>
-                    <th width="25px"></th>
-                    <th width="50px">Confidence</th>
-                </tr>
-            </thead>*@
+                    <tr>
+                        <th width="25px"></th>
+                        <th width="50px">Confidence</th>
+                    </tr>
+                </thead>*@
             <tbody>
                 @{
                     var alternate = true;
@@ -181,6 +207,19 @@
     public string _email = "";
     private string _poolMessage = "";
     private bool _poolClosed = false;
+    private Modal modal;
+
+    private async void ShowModal()
+    {
+        await modal.ShowAsync();
+
+    }
+
+    private async void HideModal()
+    {
+        await modal.HideAsync();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         PoolName = PoolName ?? "nfl";
@@ -229,7 +268,8 @@
         var s = state.User.Claims.ToList();
         PoolService.Put(PoolName, _pool, _email, userIndex);
         submited = true;
-        nav.NavigateTo($"/?pool={PoolName}");
+        // nav.NavigateTo($"/?pool={PoolName}");
+        ShowModal();
     }
 
 

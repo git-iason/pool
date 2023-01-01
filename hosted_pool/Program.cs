@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using hosted_pool.Areas.Identity;
 using hosted_pool.Data;
 using Google.Apis.Auth.OAuth2;
+using BlazorBootstrap;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<PoolService>();
+
+builder.Services.AddBlazorBootstrap();
 
 var creds = GoogleClientSecrets.FromFile("oauth.json");
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>

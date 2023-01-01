@@ -16,7 +16,7 @@
 
 <link href="css/site.css" rel="stylesheet" />
 <center>
-    <EditForm EditContext="@EditContext" style="display: inline-block; margin:auto;">
+    <EditForm EditContext="@EditContext" style="display: inline-block; margin:auto; max-width:500px">
         <DataAnnotationsValidator />
 
 
@@ -66,10 +66,17 @@
         }
         else
         {
-            @if (!_pool.IsComplete())
-            {
-                <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
-            }
+            <div style="text-align: left">
+                @if (!_pool.IsComplete())
+                {
+                    <p><label style="color: red;">Picks are incomplete! Please make all entries and click submit!</label></p>
+                }
+                else
+                {
+                    <p><label>     </label></p>
+
+                }
+            </div>
             @if (_poolClosed)
             {
                 <p><label style="color: red">@_poolMessage</label></p>
@@ -78,133 +85,134 @@
 
 
             var rounds = _pool.rounds;
-            <br />
             <div style="text-align: left">
-                <b>Name:</b> 
+                <b>Name:</b>
                 <input @bind="@_pool.pickSet" placeholder="Your Name" /><br /><br />
 
-                </div>
+            </div>
 
-                <style>
-                        table {
-                            border: 0px;
-                            border-collapse: collapse;
-                            border-spacing: 0;
-                            margin: auto;
-                        }
+            <style>
+                table {
+                    border: 0px;
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    table-layout: fixed;
+                }
 
-                        td, th {
-                            border: 0px;
-                            text-align: left;
-                            padding: 5px;
-                            margin: 5px;
-                        }
+                td, th {
+                    border: 0px;
+                    text-align: left;
+                    padding: 10px;
+                    margin: 10px;
+                }
 
-                        /*            tr:nth-child(even) {
+                /*            tr:nth-child(even) {
                         background-color: #dddddd;
                     }*/
-                </style>
-                <table class="table">
-                    @*<thead>
+            </style>
+            <table class="table">
+                @*<thead>
                         <tr>
                             <th width="25px"></th>
                             <th width="50px">Confidence</th>
                         </tr>
                     </thead>*@
-                    <tbody>
-                        @{
-                            var alternate = true;
-
-                        }
-                        @foreach (var r in rounds)
-                        {
-                            var color = "background-color: #B0DEFE";
-                            if (alternate) color = "background-color: #FEB4B0";
-                            alternate = !alternate;
-                            var game_num = 0;
-
-
-                            if (r == rounds.Last()) color = "background-color: #D5D8DA";
-
-
-                            <tr style="@color">
-                                <td style="font-size: larger"><b>@r.name</b></td>
-                                <td style="font-size: larger"><b>Confidence</b></td>
-                            </tr>
-
-
-                            @foreach (var g in r.games)
-                            {
-                                game_num++;
-                                @if (r.games.Count() > 1)
-                                {
-                                    var game_str = $"Game {game_num}";
-                                    <tr style="@color">
-                                        <td colspan="2"><b>@game_str</b> </td>
-                                    </tr>
-                                }
-                                @foreach (var w in g.possibleWinners)
-                                {
-                                    var text = $"{w.name}";
-                                    <tr style="@color">
-                                        <td style="font-size: larger; width: 25px">@text</td>
-                                        <td width="50px">
-                                            <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
-                                                <option value="Select" selected disabled="disabled">Confidence</option>
-                                                @for (var c = 1; c <= g.possibleWinners.Count(); c++)
-                                                {
-                                                    <option value="@c">@c</option>
-                                                }
-                                            </select>
-                                            <span style="color: red; font-size: large">    </span>
-                                            @if (w.confidencePick == 0)
-                                            {
-                                                <span style="color: red; font-size: large">!</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-
-
-                            }
-                            @if (r != rounds.Last())
-                            {
-                                <tr><td colspan="2">  </td></tr>
-                            }
-
-                        }
-                    </tbody>
-                </table>
-                <b>Tiebeakers</b>
-                <table class="table">
-                    @foreach (var t in _pool.tiebreakers)
-                    {
-
-                        <tr>
-                            <td colspan="2">@t.question</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <input @bind="@t.answer" disabled="@_poolClosed" />
-                                <span style="color: red; font-size: large">    </span>
-                                @if (t.answer == "")
-                                {
-                                    <span style="color: red; font-size: large">!</span>
-                                }
-                            </td>
-                        </tr>
+                <tbody>
+                    @{
+                        var alternate = true;
 
                     }
-                </table>
-                <button type="button" onclick="@shipit"> submit</button><br /><br />
-                @if (!_pool.IsComplete())
+                    @foreach (var r in rounds)
+                    {
+                        var color = "background-color: #B0DEFE";
+                        if (alternate) color = "background-color: #FEB4B0";
+                        alternate = !alternate;
+                        var game_num = 0;
+
+
+                        if (r == rounds.Last()) color = "background-color: #D5D8DA";
+
+
+                        <tr style="@color">
+                            <td style="font-size: larger"><b>@r.name</b></td>
+                            <td style="font-size: larger"><b>Confidence</b></td>
+                        </tr>
+
+
+                        @foreach (var g in r.games)
+                        {
+                            game_num++;
+                            @if (r.games.Count() > 1)
+                            {
+                                var game_str = $"Game {game_num}";
+                                <tr style="background-color: lightgray; height: 5px">
+                                    <td colspan="2"> </td>
+                                </tr>
+                            }
+                            @foreach (var w in g.possibleWinners)
+                            {
+                                var text = $"{w.name}";
+                                <tr style="@color">
+                                    <td style="font-size: larger; width: 100px">@text</td>
+                                    <td style="width:100px">
+                                        <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
+                                            <option value="Select" selected disabled="disabled">Confidence</option>
+                                            @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                                            {
+                                                <option value="@c">@c</option>
+                                            }
+                                        </select>
+                                        <span style="color: red; font-size: large">    </span>
+                                        @if (w.confidencePick == 0)
+                                        {
+                                            <span style="color: red; font-size: large">!</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+
+
+                        }
+                        @if (r != rounds.Last())
+                        {
+                            <tr><td colspan="2">  </td></tr>
+                        }
+
+                    }
+                </tbody>
+            </table>
+            <div style="text-align: left">
+                <label><b>Tiebeakers</b></label>
+            </div>
+            <table class="table">
+                @foreach (var t in _pool.tiebreakers)
                 {
-                    <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
-                }
+
+                    <tr>
+                        <td colspan="2">@t.question</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <input @bind="@t.answer" disabled="@_poolClosed" />
+                            <span style="color: red; font-size: large">    </span>
+                            @if (t.answer == "")
+                            {
+                                <span style="color: red; font-size: large">!</span>
+                            }
+                        </td>
+                    </tr>
 
                 }
+            </table>
+            <button type="button" onclick="@shipit"> submit</button><br /><br />
+            @if (!_pool.IsComplete())
+            {
+                <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
+            }
 
-        </EditForm>
+        }
+
+    </EditForm>
 </center>
 @code {
     private EditContext EditContext;
@@ -230,7 +238,7 @@
 
     private async void CheckForMobile()
     {
-        isMobile =  await JSRuntime.InvokeAsync<bool>("isMobile");
+        isMobile = await JSRuntime.InvokeAsync<bool>("isMobile");
     }
 
     protected override async Task OnInitializedAsync()

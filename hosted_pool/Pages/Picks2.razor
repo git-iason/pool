@@ -12,192 +12,194 @@
 @inject AuthenticationStateProvider aspService
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager nav
+@inject IJSRuntime JSRuntime
+
+<link href="css/site.css" rel="stylesheet" />
+<center>
+    <EditForm EditContext="@EditContext" style="display: inline-block; margin:auto;">
+        <DataAnnotationsValidator />
 
 
+        <Modal @ref="modal" UseStaticBackdrop="true">
+            <BodyTemplate>
+                @if (!_pool.IsComplete())
+                {
+                    <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end!</label></p>
+                }
+                else
+                {
+                    <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.</label></p>
+                }
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Primary" @onclick="HideModal">Ok</Button>
+            </FooterTemplate>
+        </Modal>
 
 
-<EditForm EditContext="@EditContext">
-    <DataAnnotationsValidator />
+        @((MarkupString)@_pool.welcomeStr)
+        @if (_pool == null)
+        {
+            <p><em>Loading</em></p>
+        }
+        else if (!state.User.Identity.IsAuthenticated)
+        {
+
+            <form method="post" class="form-horizontal" action="Identity/Account/ExternalLogin?returnUrl=%2F">
+                <div>
+
+                    <button type="submit" class="nav-link btn btn-link" name="provider" value="Google">Please log in with Google to view the bracket</button>
 
 
-    <Modal @ref="modal" UseStaticBackdrop="true">
-        <BodyTemplate>
+                </div>
+            </form>
+        }
+        else if (submited && _pool.IsComplete())
+        {
+            <p>Your picks have been submitted</p>
+            <button type="button" onclick="@edit">Edit picks</button>
+        }
+        else
+        {
             @if (!_pool.IsComplete())
             {
-                <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end!</label></p>
+                <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
             }
-            else
+            @if (_poolClosed)
             {
-                <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.</label></p>
+                <p><label style="color: red">@_poolMessage</label></p>
             }
-        </BodyTemplate>
-        <FooterTemplate>
-            <Button Color="ButtonColor.Primary" @onclick="HideModal">Ok</Button>
-        </FooterTemplate>
-    </Modal>
+            submited = false;
 
 
-    @((MarkupString)@_pool.welcomeStr)
-    @if (_pool == null)
-    {
-        <p><em>Loading</em></p>
-    }
-    else if (!state.User.Identity.IsAuthenticated)
-    {
-
-        <form method="post" class="form-horizontal" action="Identity/Account/ExternalLogin?returnUrl=%2F">
-            <div>
-
-                <button type="submit" class="nav-link btn btn-link" name="provider" value="Google">Please log in with Google to view the bracket</button>
+            var rounds = _pool.rounds;
+            <br />
+            <label><b>Name:</b> </label>
+            <input @bind="@_pool.pickSet" placeholder="Your Name" /><br /><br />
 
 
-            </div>
-        </form>
-    }
-    else if (submited && _pool.IsComplete())
-    {
-        <p>Your picks have been submitted</p>
-        <button type="button" onclick="@edit">Edit picks</button>
-    }
-    else
-    {
-        @if (!_pool.IsComplete())
-        {
-            <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
-        }
-        @if (_poolClosed)
-        {
-            <p><label style="color: red">@_poolMessage</label></p>
-        }
-        submited = false;
 
+            <style>
+                table {
+                    border: 0px;
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    margin: auto;
+                }
 
-        var rounds = _pool.rounds;
-        <label><b>Name:</b> </label>
-        <input @bind="@_pool.pickSet" placeholder="Your Name" /><br /><br />
+                td, th {
+                    border: 0px;
+                    text-align: left;
+                    padding: 5px;
+                    margin: 5px;
+                }
 
-
-        <style>
-            table {
-                border: 0px;
-                border-collapse: collapse;
-                border-spacing: 0;
-                width: 100%;
-            }
-
-            td, th {
-                border: 0px;
-                text-align: left;
-                padding: 5px;
-                margin: 5px;
-            }
-
-            /*            tr:nth-child(even) {
+                /*            tr:nth-child(even) {
                     background-color: #dddddd;
                 }*/
-        </style>
-        <table class="table">
-            @*<thead>
-                    <tr>
-                        <th width="25px"></th>
-                        <th width="50px">Confidence</th>
-                    </tr>
-                </thead>*@
-            <tbody>
-                @{
-                    var alternate = true;
+            </style>
+            <table class="table">
+                @*<thead>
+                        <tr>
+                            <th width="25px"></th>
+                            <th width="50px">Confidence</th>
+                        </tr>
+                    </thead>*@
+                <tbody>
+                    @{
+                        var alternate = true;
 
-                }
-                @foreach (var r in rounds)
-                {
-                    var color = "background-color: #B0DEFE";
-                    if (alternate) color = "background-color: #FEB4B0";
-                    alternate = !alternate;
-                    var game_num = 0;
-
-
-                    if (r == rounds.Last()) color = "background-color: #D5D8DA";
-
-
-                    <tr style="@color">
-                        <td style="font-size: larger"><b>@r.name</b></td>
-                        <td style="font-size: larger"><b>Confidence</b></td>
-                    </tr>
-
-
-                    @foreach (var g in r.games)
+                    }
+                    @foreach (var r in rounds)
                     {
-                        game_num++;
-                        @if (r.games.Count() > 1)
+                        var color = "background-color: #B0DEFE";
+                        if (alternate) color = "background-color: #FEB4B0";
+                        alternate = !alternate;
+                        var game_num = 0;
+
+
+                        if (r == rounds.Last()) color = "background-color: #D5D8DA";
+
+
+                        <tr style="@color">
+                            <td style="font-size: larger"><b>@r.name</b></td>
+                            <td style="font-size: larger"><b>Confidence</b></td>
+                        </tr>
+
+
+                        @foreach (var g in r.games)
                         {
-                            var game_str = $"Game {game_num}";
-                            <tr style="@color">
-                                <td colspan="2"><b>@game_str</b> </td>
-                            </tr>
-                        }
-                        @foreach (var w in g.possibleWinners)
-                        {
-                            var text = $"{w.name}";
-                            <tr style="@color">
-                                <td style="font-size: larger; width: 25px">@text</td>
-                                <td width="50px">
-                                    <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
-                                        <option value="Select" selected disabled="disabled">Confidence</option>
-                                        @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                            game_num++;
+                            @if (r.games.Count() > 1)
+                            {
+                                var game_str = $"Game {game_num}";
+                                <tr style="@color">
+                                    <td colspan="2"><b>@game_str</b> </td>
+                                </tr>
+                            }
+                            @foreach (var w in g.possibleWinners)
+                            {
+                                var text = $"{w.name}";
+                                <tr style="@color">
+                                    <td style="font-size: larger; width: 25px">@text</td>
+                                    <td width="50px">
+                                        <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
+                                            <option value="Select" selected disabled="disabled">Confidence</option>
+                                            @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                                            {
+                                                <option value="@c">@c</option>
+                                            }
+                                        </select>
+                                        <span style="color: red; font-size: large">    </span>
+                                        @if (w.confidencePick == 0)
                                         {
-                                            <option value="@c">@c</option>
+                                            <span style="color: red; font-size: large">!</span>
                                         }
-                                    </select>
-                                    <span style="color: red; font-size: large">    </span>
-                                    @if (w.confidencePick == 0)
-                                    {
-                                        <span style="color: red; font-size: large">!</span>
-                                    }
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
+                            }
+
+
+                        }
+                        @if (r != rounds.Last())
+                        {
+                            <tr><td colspan="2">  </td></tr>
                         }
 
+                    }
+                </tbody>
+            </table>
+            <b>Tiebeakers</b>
+            <table class="table">
+                @foreach (var t in _pool.tiebreakers)
+                {
 
-                    }
-                    @if (r != rounds.Last())
-                    {
-                        <tr><td colspan="2">  </td></tr>
-                    }
+                    <tr>
+                        <td colspan="2">@t.question</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <input @bind="@t.answer" disabled="@_poolClosed" />
+                            <span style="color: red; font-size: large">    </span>
+                            @if (t.answer == "")
+                            {
+                                <span style="color: red; font-size: large">!</span>
+                            }
+                        </td>
+                    </tr>
 
                 }
-            </tbody>
-        </table>
-        <b>Tiebeakers</b>
-        <table class="table">
-            @foreach (var t in _pool.tiebreakers)
+            </table>
+            <button type="button" onclick="@shipit"> submit</button><br /><br />
+            @if (!_pool.IsComplete())
             {
-
-                <tr>
-                    <td colspan="2">@t.question</td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <input @bind="@t.answer" disabled="@_poolClosed" />
-                        <span style="color: red; font-size: large">    </span>
-                        @if (t.answer == "")
-                        {
-                            <span style="color: red; font-size: large">!</span>
-                        }
-                    </td>
-                </tr>
-
+                <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
             }
-        </table>
-        <button type="button" onclick="@shipit"> submit</button><br /><br />
-        @if (!_pool.IsComplete())
-        {
-            <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
+
         }
 
-    }
-
-</EditForm>
-
+    </EditForm>
+</center>
 @code {
     private EditContext EditContext;
     private Pool? _pool;
@@ -208,7 +210,7 @@
     private string _poolMessage = "";
     private bool _poolClosed = false;
     private Modal modal;
-
+    public bool isMobile = false;
     private async void ShowModal()
     {
         await modal.ShowAsync();
@@ -220,8 +222,14 @@
         await modal.HideAsync();
     }
 
+    private async void CheckForMobile()
+    {
+        isMobile =  await JSRuntime.InvokeAsync<bool>("isMobile");
+    }
+
     protected override async Task OnInitializedAsync()
     {
+
         PoolName = PoolName ?? "nfl";
 
         state = await aspService.GetAuthenticationStateAsync();

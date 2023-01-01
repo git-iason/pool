@@ -22,14 +22,16 @@
 
         <Modal @ref="modal" UseStaticBackdrop="true">
             <BodyTemplate>
-                @if (!_pool.IsComplete())
-                {
-                    <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end!</label></p>
-                }
-                else
-                {
-                    <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.</label></p>
-                }
+                <div style="text-align:left">
+                    @if (!_pool.IsComplete())
+                    {
+                        <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end!</label></p>
+                    }
+                    else
+                    {
+                        <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.</label></p>
+                    }
+                </div>
             </BodyTemplate>
             <FooterTemplate>
                 <Button Color="ButtonColor.Primary" @onclick="HideModal">Ok</Button>
@@ -69,12 +71,12 @@
             <div style="text-align: left">
                 @if (!_pool.IsComplete())
                 {
-                    <p><label style="color: red;">Picks are incomplete! Please make all entries and click submit!</label></p>
+                    <label style="color: red;">Picks are incomplete!<br/>Please make all entries and click submit! </label>
+                    
                 }
                 else
                 {
-                    <p><label>     </label></p>
-
+                    <label><br/><br/></label>
                 }
             </div>
             @if (_poolClosed)
@@ -145,7 +147,7 @@
                             @if (r.games.Count() > 1)
                             {
                                 var game_str = $"Game {game_num}";
-                                <tr style="background-color: lightgray; height: 5px">
+                                <tr style="background-color: lightgray; max-height: 5px">
                                     <td colspan="2"> </td>
                                 </tr>
                             }
@@ -205,10 +207,17 @@
                 }
             </table>
             <button type="button" onclick="@shipit"> submit</button><br /><br />
-            @if (!_pool.IsComplete())
-            {
-                <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
-            }
+            <div style="text-align: left">
+                @if (!_pool.IsComplete())
+                {
+                    <label style="color: red;">Picks are incomplete!<br />Please make all entries and click submit! </label>
+
+                }
+                else
+                {
+                    <label><br /><br /></label>
+                }
+            </div>
 
         }
 
@@ -231,15 +240,7 @@
 
     }
 
-    private async void HideModal()
-    {
-        await modal.HideAsync();
-    }
 
-    private async void CheckForMobile()
-    {
-        isMobile = await JSRuntime.InvokeAsync<bool>("isMobile");
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -262,6 +263,8 @@
             _pool = await PoolService.Get(PoolName, _email, out userIndex);
             if (_pool != null && _pool.pickSet == "")
                 _pool.pickSet = new_name;
+
+            submited = _pool.IsComplete();
         }
         else
         {

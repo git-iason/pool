@@ -65,18 +65,23 @@
                 padding: 5px;
                 margin: 5px;
             }
-
+            select {
+                width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
             /*            tr:nth-child(even) {
                 background-color: #dddddd;
             }*/
         </style>
         <table class="table">
             @*<thead>
-                <tr>
-                    <th width="25px"></th>
-                    <th width="50px">Confidence</th>
-                </tr>
-            </thead>*@
+                    <tr>
+                        <th width="25px"></th>
+                        <th width="50px">Confidence</th>
+                    </tr>
+                </thead>*@
             <tbody>
                 @{
                     var alternate = true;
@@ -119,7 +124,17 @@
                                         <option value="Select" selected disabled="disabled">Confidence</option>
                                         @for (var c = 1; c <= g.possibleWinners.Count(); c++)
                                         {
-                                            <option value="@c">@c</option>
+                                            var option_val = c.ToString();
+                                            @*@foreach (var lw in g.possibleWinners)
+            {
+                if (lw == w) continue;
+                if(lw.confidencePick == c)
+                {
+                    option_val = $"{c} - {lw.name}";
+                    break;
+                }
+            }*@
+                                            <option value="@c">@option_val</option>
                                         }
                                     </select>
                                     <span style="color: red; font-size: large">    </span>
@@ -163,6 +178,7 @@
             }
         </table>
         <button type="button" onclick="@shipit"> submit</button><br /><br />
+        <button type="button" onclick="@big_ship"> test</button><br /><br />
         @if (!_pool.IsComplete())
         {
             <p><label style="color: red">Picks are incomplete! Please make all entries and click submit!</label></p>
@@ -232,7 +248,22 @@
         nav.NavigateTo($"/?pool={PoolName}");
     }
 
+    private async void big_ship()
+    {
+        //Parallel.For(0, 10,  index =>
+        for(var index=0;index<100;index++)
+        {
+            System.Threading.Thread.Sleep(200);
+            var new_name = $"set {index}";
+            var email = $"{index}@gmail.com";
+            var temp_pool =  PoolService.Get(PoolName, email, out userIndex);
 
+
+            _pool.pickSet = new_name;
+            PoolService.Put(PoolName, _pool, email, userIndex);
+
+        }//);
+    }
 
     [SupplyParameterFromQuery(Name = "pool")]
     [Parameter]

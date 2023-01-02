@@ -238,16 +238,39 @@ namespace hosted_pool.Data
             var res = false;
             message = "Boom";
 
-            if( DateTime.Now < start)
+            var adjustedEndDate = GetAdjustEndTime().ToShortDateString();
+            var adjustedEndTime = GetAdjustEndTime().ToShortTimeString();
+            if ( DateTime.Now < start)
             {
-                message = $"The pool is not open yet, check back on {start}";
+                message = $"The pool is not open yet, check back on {adjustedEndDate} at {adjustedEndTime} ET";
             }
             else if(DateTime.Now > end)
             {
-                message = $"Sorry, the pool closed as of {end}";
+                message = $"Sorry, the pool closed as of {adjustedEndDate} at {adjustedEndTime} ET";
             }
             else { res = true; }
             return res;
+        }
+
+        private DateTime GetAdjustedTime(DateTime dt, string tz= "Eastern Standard Time")
+        {
+            TimeZoneInfo originalTimeZone = TimeZoneInfo.Local;
+            TimeZoneInfo newTimeZone = TimeZoneInfo.FindSystemTimeZoneById(tz);
+
+            var originalTimeOffset = new DateTimeOffset(dt, originalTimeZone.GetUtcOffset(dt));
+            var newTimeOffset = TimeZoneInfo.ConvertTime(originalTimeOffset, newTimeZone);
+
+            return newTimeOffset.DateTime;
+        }
+
+        public DateTime GetAdjustStartTime(string tz = "Eastern Standard Time")
+        {
+            return GetAdjustedTime(start, tz);
+        }
+
+        public DateTime GetAdjustEndTime(string tz = "Eastern Standard Time")
+        {
+            return GetAdjustedTime(end, tz);
         }
     }
 

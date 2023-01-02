@@ -23,13 +23,14 @@
         <Modal @ref="modal" UseStaticBackdrop="true">
             <BodyTemplate>
                 <div style="text-align:left">
+                    
                     @if (!_pool.IsComplete())
                     {
-                        <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.end.ToShortDateString() at @_pool.end.ToShortTimeString()!</label></p>
+                        <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.GetAdjustEndTime().ToShortDateString() at @_pool.GetAdjustEndTime().ToShortTimeString() ET!</label></p>
                     }
                     else
                     {
-                        <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.end.ToShortDateString() at @_pool.end.ToShortTimeString().</label></p>
+                        <p><label>Thank you - your picks are complete! You can change them until the pool closes on @_pool.GetAdjustEndTime().ToShortDateString() at @_pool.GetAdjustEndTime().ToShortTimeString() ET.</label></p>
                     }
                 </div>
             </BodyTemplate>

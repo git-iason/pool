@@ -156,6 +156,8 @@ namespace hosted_pool.Data
             var c = 0;
             var val = values[0];
             var fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+
+
             while (!fieldName.Equals(stopString))
             {
 
@@ -170,7 +172,7 @@ namespace hosted_pool.Data
                 if (fieldName.Equals("start"))
                 {
                     var timeString = val[1].ToString();
-                    res.start = DateTime.Parse(timeString);
+                    res.start= DateTime.Parse(timeString);
                 }
                 if (fieldName.Equals("lock"))
                 {

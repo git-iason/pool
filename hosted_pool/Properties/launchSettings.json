@@ -11,7 +11,7 @@
     "hosted_pool": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7162;http://localhost:5191",
+      "applicationUrl": "https://localhost:7162;http://localhost:5191;https://192.168.1.42:7162",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

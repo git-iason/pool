@@ -16,6 +16,7 @@ namespace hosted_pool.Data
             get { return confidencePick.ToString(); }
             set
             {
+                Console.WriteLine(value);
                 associatedGame?.UpdatePicks(value);
                 confidencePick = Convert.ToInt32(value);
             }
@@ -47,6 +48,33 @@ namespace hosted_pool.Data
                     p.confidencePickStr = "0";
         }
 
+        public List<string> Choices(string currentTeam)
+        {
+
+            List<string> list = Enumerable.Range(1, _possibleWinners.Count).Select(x => x.ToString()).ToList();
+
+            for (var c = 0; c < list.Count; c++)
+            {
+                for (var i = 0; i < possibleWinners.Count; i++)
+                {
+                    var pick = _possibleWinners[i].confidencePickStr;
+                    if (_possibleWinners[i].confidencePickStr == "0")
+                        continue;
+
+                    if (_possibleWinners[i].name.Equals(currentTeam))
+                        continue;
+
+                    if (list[c].Equals(_possibleWinners[i].confidencePickStr))
+                    {
+                        list[c] = $"{list[c]} - {_possibleWinners[i].name}";
+                    }
+
+                }
+            }
+
+            return list;
+
+        }
         public override string ToString()
         {
             var res = "";
@@ -144,7 +172,7 @@ namespace hosted_pool.Data
 
         public void AddTiebreaker(string name, string question)
         {
-            _tiebreakers.Add(new TieBreaker { name=name, question = question});
+            _tiebreakers.Add(new TieBreaker { name = name, question = question });
         }
         public override string ToString()
         {
@@ -185,15 +213,15 @@ namespace hosted_pool.Data
             var picksDictionary = JsonSerializer.Deserialize<Dictionary<string, string>>(picksJson);
             LoadPicks(picksDictionary);
         }
-        public void LoadPicks(Dictionary<string,string> picks)
+        public void LoadPicks(Dictionary<string, string> picks)
         {
             if (picks == null) return;
 
-            foreach(var round in rounds)
+            foreach (var round in rounds)
             {
-                foreach(var game in round.games)
+                foreach (var game in round.games)
                 {
-                    foreach(var possible in game.possibleWinners)
+                    foreach (var possible in game.possibleWinners)
                     {
                         string val = "0";
                         var success = picks.TryGetValue(possible.id, out val);
@@ -201,7 +229,7 @@ namespace hosted_pool.Data
                     }
                 }
             }
-            foreach(var t in tiebreakers)
+            foreach (var t in tiebreakers)
             {
                 string val = "";
                 var success = picks.TryGetValue(t.name, out val);
@@ -240,11 +268,11 @@ namespace hosted_pool.Data
 
             var adjustedEndDate = GetAdjustEndTime().ToShortDateString();
             var adjustedEndTime = GetAdjustEndTime().ToShortTimeString();
-            if ( DateTime.Now < start)
+            if (DateTime.Now < start)
             {
                 message = $"The pool is not open yet, check back on {adjustedEndDate} at {adjustedEndTime} ET";
             }
-            else if(DateTime.Now > end)
+            else if (DateTime.Now > end)
             {
                 message = $"Sorry, the pool closed as of {adjustedEndDate} at {adjustedEndTime} ET";
             }
@@ -252,7 +280,7 @@ namespace hosted_pool.Data
             return res;
         }
 
-        private DateTime GetAdjustedTime(DateTime dt, string tz= "Eastern Standard Time")
+        private DateTime GetAdjustedTime(DateTime dt, string tz = "Eastern Standard Time")
         {
             TimeZoneInfo originalTimeZone = TimeZoneInfo.Local;
             TimeZoneInfo newTimeZone = TimeZoneInfo.FindSystemTimeZoneById(tz);
@@ -274,5 +302,5 @@ namespace hosted_pool.Data
         }
     }
 
-   
+
 }

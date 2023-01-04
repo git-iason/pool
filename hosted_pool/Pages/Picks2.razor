@@ -23,7 +23,7 @@
         <Modal @ref="modal" UseStaticBackdrop="true">
             <BodyTemplate>
                 <div style="text-align:left">
-                    
+
                     @if (!_pool.IsComplete())
                     {
                         <p><label style="color: red">Picks are incomplete! Please make all entries and submit before the pool closes on @_pool.GetAdjustEndTime().ToShortDateString() at @_pool.GetAdjustEndTime().ToShortTimeString() ET!</label></p>
@@ -64,7 +64,7 @@
         }
         else if (submited && _pool.IsComplete())
         {
-            <br/>
+            <br />
             <p>Your picks have been submitted</p>
             <button type="button" onclick="@edit">Edit picks</button>
         }
@@ -73,12 +73,12 @@
             <div style="text-align: left">
                 @if (!_pool.IsComplete())
                 {
-                    <label style="color: red;">Picks are incomplete!<br/>Please make all entries and click submit! </label>
-                    
+                    <label style="color: red;">Picks are incomplete!<br />Please make all entries and click submit! </label>
+
                 }
                 else
                 {
-                    <label><br/><br/></label>
+                    <label><br /><br /></label>
                 }
             </div>
             @if (_poolClosed)
@@ -110,6 +110,9 @@
                     margin: 10px;
                 }
 
+                select {
+                    width: 100px;
+                }
                 /*            tr:nth-child(even) {
                         background-color: #dddddd;
                     }*/
@@ -160,11 +163,14 @@
                                     <td style="font-size: larger; width: 100px">@text</td>
                                     <td style="width:100px">
                                         <select @bind="@w.confidencePickStr" disabled="@_poolClosed">
-                                            <option value="Select" selected disabled="disabled">Confidence</option>
-                                            @for (var c = 1; c <= g.possibleWinners.Count(); c++)
+                                            <option value="0" selected disabled="disabled">-</option>
+
+                                            @for (var c = 1; c <= g.Choices(w.name).Count; c++)
                                             {
-                                                <option value="@c">@c</option>
+                                                <option value="@c">@g.Choices(w.name)[c - 1]</option>
+
                                             }
+
                                         </select>
                                         <span style="color: red; font-size: large">    </span>
                                         @if (w.confidencePick == 0)

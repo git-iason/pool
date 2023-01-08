@@ -1,0 +1,53 @@
+﻿<h3>Boom @email</h3>
+
+@code {
+
+    [Parameter]
+    public IList<IList<object>> picks { get; set; } = null;
+
+    [Parameter]
+    public string email { get; set; } = "no@name";
+
+    public List<string> headerRow = new List<string>();
+    public List<string> userPickRow = new List<string>();
+    public Dictionary<string, List<string>> pickRows = new Dictionary<string, List<string>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetupData();
+    }
+
+    private void SetupData()
+    {
+        if(picks != null)
+        {
+            headerRow.Add(" ");
+            foreach(var r in picks.Skip(3))
+            {
+                headerRow.Add(r[0].ToString());
+                for(int c = 1; c< r.Count; c++)
+                {
+                    var key = picks[0][c].ToString();
+                    var setName = picks[1][c].ToString();
+                    if (key.Equals(email))
+                    {
+                        if (userPickRow.Count == 0) userPickRow.Add(setName);
+                        userPickRow.Add(r[c].ToString());
+                    }
+                    else
+                    {
+                        var exists = pickRows.ContainsKey(key);
+                        if (!exists)
+                        {
+                            pickRows.Add(key, new List<string>{setName});
+                        }
+                        pickRows[key].Add(r[c].ToString());
+                    }
+                }
+            }
+
+        }
+        Console.WriteLine(headerRow);
+    }
+    }
+

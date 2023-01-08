@@ -42,6 +42,20 @@ namespace hosted_pool.Data
             return Task.FromResult(pool);
         }
 
+        public Task<IList<IList<object>>> GetGroupPicks(string pool_name)
+        {
+            IList<IList<object>> values = null;
+
+            SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
+            var range = $"{pool_name}_overview";
+
+
+            var request = _googleSheetValues.Get(_docId, range);
+            var response = request.Execute();
+            values = response.Values;
+          
+            return Task.FromResult(values);
+        }
         private string GetPicks(string pool_name, string user, out int userIndex)
         {
             IList<IList<object>> values = null;
@@ -57,6 +71,8 @@ namespace hosted_pool.Data
             return res;
         }
 
+
+        
         private Pool GetPool(string pool_name)
         {
             IList<IList<object>> values = null;
@@ -179,6 +195,13 @@ namespace hosted_pool.Data
                     var timeString = val[1].ToString();
                     res.end = DateTime.Parse(timeString);
                 }
+                if (fieldName.Equals("showgroup"))
+                {
+                    var temp = false;
+                    Boolean.TryParse(val[1].ToString(), out temp );
+                    res.ShowGroup = temp;
+                }
+
                 val = values[++c];
                 
                 fieldName = val.Count > 0?val[0].ToString().ToLower():"";

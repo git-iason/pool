@@ -153,7 +153,7 @@ namespace hosted_pool.Data
         private List<TieBreaker> _tiebreakers = new List<TieBreaker>();
         public IReadOnlyCollection<TieBreaker> tiebreakers => _tiebreakers.AsReadOnly();
 
-
+        public bool ShowGroup { get; set; } = false;
         public Pool()
         {
             start = DateTime.Now.AddHours(-1);

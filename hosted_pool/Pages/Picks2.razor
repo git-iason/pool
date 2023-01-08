@@ -7,12 +7,16 @@
 @using Microsoft.AspNetCore.Mvc
 @using Microsoft.AspNetCore.Components.Web
 @using BlazorBootstrap
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Components
+
 
 @inject PoolService PoolService
 @inject AuthenticationStateProvider aspService
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager nav
 @inject IJSRuntime JSRuntime
+
 
 <link href="css/site.css" rel="stylesheet" />
 <center>
@@ -68,8 +72,15 @@
             <p>Your picks have been submitted</p>
             <button type="button" onclick="@edit">Edit picks</button>
         }
+        else if (_poolClosed && _pool.ShowGroup)
+        {
+            <GroupPicks @ref="groupPicks" email="@_email" picks="@group_picks"/>
+
+        }
         else
         {
+
+
             <div style="text-align: left">
                 @if (!_pool.IsComplete())
                 {
@@ -84,7 +95,10 @@
             @if (_poolClosed)
             {
                 <p><label style="color: red">@_poolMessage</label></p>
+
             }
+
+
             submited = false;
 
 
@@ -119,11 +133,11 @@
             </style>
             <table class="table">
                 @*<thead>
-                        <tr>
-                            <th width="25px"></th>
-                            <th width="50px">Confidence</th>
-                        </tr>
-                    </thead>*@
+                    <tr>
+                        <th width="25px"></th>
+                        <th width="50px">Confidence</th>
+                    </tr>
+                </thead>*@
                 <tbody>
                     @{
                         var alternate = true;
@@ -242,6 +256,10 @@
     private bool _poolClosed = false;
     private Modal modal;
     public bool isMobile = false;
+
+    private GroupPicks groupPicks;
+    public IList<IList<object>> group_picks = null;
+
     private async void ShowModal()
     {
         await modal.ShowAsync();
@@ -276,6 +294,11 @@
                 _pool.pickSet = new_name;
 
             submited = _pool.IsComplete();
+
+            if(_pool.ShowGroup)
+            {
+                group_picks = await PoolService.GetGroupPicks(PoolName);
+            }
         }
         else
         {

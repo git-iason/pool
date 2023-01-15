@@ -1,53 +1,204 @@
-﻿<h3>Boom @email</h3>
+﻿@using hosted_pool.Data
+
+
+<style>
+    table {
+        border: 0px;
+        border-collapse: collapse;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+    td, th {
+        border: 0px;
+        text-align: left;
+        padding: 10px;
+        margin: 10px;
+        white-space: nowrap;
+    }
+
+    /*            tr:nth-child(even) {
+                        background-color: #dddddd;
+                    }*/
+</style>
+<table>
+    @*<thead>
+            <tr>
+                <th width="25px"></th>
+                <th width="50px">Confidence</th>
+            </tr>
+        </thead>*@
+    <tbody>
+        @{
+            var alternate = true;
+
+        }
+        <tr>
+            <td> </td>
+            @foreach (var r in roundRow)
+            {
+                var color = "background-color: #B0DEFE";
+                if (alternate) color = "background-color: #FEB4B0";
+                alternate = !alternate;
+                if (r == roundRow.Last()) color = "background-color: #D5D8DA";
+            }
+        </tr>
+        @*<tr>
+                @foreach (var r in gameRow)
+                {
+                    var color = "background-color: #D1D1D1";
+                    if (alternate) color = "background-color: #ECECEC";
+                    alternate = !alternate;
+                    if (r == gameRow.Last()) color = "background-color: #D5D8DA";
+                    <td style="font-size: larger;@color" colspan="@r.Item2"><b>@r.Item1</b></td>
+                }
+            </tr>*@
+        @code{
+            string clr = "background-color: #D1D1D1";
+        }
+    <tr style="@clr">
+
+        <td s> </td>
+        @foreach (var r in possiblesRow)
+        {
+
+
+            @foreach (var p in r)
+            {
+                var border = "";
+                if (p == r.Last()) border = "border-right: 3px solid black;";
+                var back_color = p.Item2 ? "background-color: #F95C5C" : "";
+                <td style="font-size: larger;@border;@back_color"><b>@p.Item1</b></td>
+            }
+            
+
+        }
+    </tr>
+        @code
+                {string color = "background-color: #F3FCA3";
+        }
+        <tr style="font-weight: bolder;@color">
+            <td> @userPickSet</td>
+            @foreach (var r in userPickRow)
+            {
+
+                if (r == userPickRow.Last()) color = "background-color: #00FFF0";
+                @for (int c = 0; c
+                  < r.Count; c++)
+                {
+                    var border = "";
+                    if (c == r.Count - 1) border = "border-right: 3px solid black;";
+
+                    if (@r[c] == r.Last()) border = "border-right: 3px solid black;";
+                    var fgcolor = @r[c].Item2 ? "color: #F95C5C" : "";
+                    <td style="font-size: larger;@border;@fgcolor;">@r[c].Item1</td>
+                }
+            }
+        </tr>
+        @foreach (var entry in pickRows)
+        {
+            var color = "background-color: #D1D1D1";
+            if (alternate) color = "background-color: #ECECEC";
+            alternate = !alternate;
+            <tr style="@color">
+                <td>@entry.Key</td>
+                @foreach (var r in entry.Value)
+                {
+
+
+                    if (r == entry.Value.Last()) color = "background-color: #D5D8DA";
+                    @for (int c = 0; c < r.Count; c++)
+                    {
+                        var border = "";
+                        if (c == r.Count - 1) border = "border-right: 3px solid black;";
+                        var fgcolor = @r[c].Item2 ? "color: #F95C5C" : "";
+                        <td style="font-size: larger;@border;@fgcolor"><b>@r[c].Item1</b></td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
 
     [Parameter]
-    public IList<IList<object>> picks { get; set; } = null;
+    public Dictionary<string, string> picks { get; set; } = null;
 
     [Parameter]
     public string email { get; set; } = "no@name";
 
-    public List<string> headerRow = new List<string>();
-    public List<string> userPickRow = new List<string>();
-    public Dictionary<string, List<string>> pickRows = new Dictionary<string, List<string>>();
+    [Parameter]
+    public Pool pool { get; set; } = null;
+
+    public List<Tuple<string, int>> roundRow = new List<Tuple<string, int>>();
+    public List<Tuple<string, int>> gameRow = new List<Tuple<string, int>>();
+
+    public List<List<Tuple<string, bool>>> possiblesRow = new List<List<Tuple<string, bool>>>();
+    public List<List<Tuple<string, bool>>> userPickRow = new List<List<Tuple<string, bool>>>();
+    public Dictionary<string, List<List<Tuple<string, bool>>>> pickRows = new Dictionary<string, List<List<Tuple<string, bool>>>>();
+    private string userPickSet = "";
 
     protected override async Task OnInitializedAsync()
     {
-        SetupData();
+        BuildData();
     }
 
-    private void SetupData()
+    private void BuildData()
     {
-        if(picks != null)
+        if (picks != null && pool != null)
         {
-            headerRow.Add(" ");
-            foreach(var r in picks.Skip(3))
+            var buildHeader = true;
+            foreach (var p in picks)
             {
-                headerRow.Add(r[0].ToString());
-                for(int c = 1; c< r.Count; c++)
+                pool.LoadPicks(p.Value);
+                var l = new List<List<Tuple<string, bool>>>();
+                foreach (var r in pool.rounds)
                 {
-                    var key = picks[0][c].ToString();
-                    var setName = picks[1][c].ToString();
-                    if (key.Equals(email))
+                    var colspan = r.games.SelectMany(l => l.possibleWinners).Count();
+                    if (buildHeader) roundRow.Add(new Tuple<string, int>(r.name, colspan));
+                    int c = 0;
+
+                    foreach (var g in r.games)
                     {
-                        if (userPickRow.Count == 0) userPickRow.Add(setName);
-                        userPickRow.Add(r[c].ToString());
-                    }
-                    else
-                    {
-                        var exists = pickRows.ContainsKey(key);
-                        if (!exists)
+                        if (buildHeader) gameRow.Add(new Tuple<string, int>(g.num.ToString(), g.possibleWinners.Count()));
+                        var tg = new List<Tuple<string, bool>>();
+                        var possibles = new List<Tuple<string, bool>>();
+                        foreach (var w in g.possibleWinners)
                         {
-                            pickRows.Add(key, new List<string>{setName});
+                            if (buildHeader) possibles.Add(new Tuple<string, bool>(w.name, w.eliminated));
+                            tg.Add(new Tuple<string, bool>(w.confidencePickStr, w.eliminated));
                         }
-                        pickRows[key].Add(r[c].ToString());
+                        if (p.Key.Equals(email))
+                        {
+                            userPickRow.Add(tg);
+                            userPickSet = pool.pickSet;
+                        }
+                        else
+                            l.Add(tg);
+
+                        if (buildHeader) possiblesRow.Add(possibles);
                     }
                 }
-            }
+                var points = new List<Tuple<string, bool>>();
+                points.Add(new Tuple<string, bool>(pool.points.ToString(), false));
+                var total = new List<Tuple<string, bool>>();
+                total.Add(new Tuple<string, bool>("Total", false));
+                if (buildHeader)
+                    possiblesRow.Add(total);
+                if (p.Key.Equals(email))
+                {
+                    userPickRow.Add(points);
+                }
+                else
+                {
+                    l.Add(points);
+                }
+                if (l.Count > 0) pickRows.Add(pool.pickSet, l);
 
+                buildHeader = false;
+            }
         }
-        Console.WriteLine(headerRow);
     }
-    }
+}
 

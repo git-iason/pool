@@ -42,19 +42,19 @@ namespace hosted_pool.Data
             return Task.FromResult(pool);
         }
 
-        public Task<IList<IList<object>>> GetGroupPicks(string pool_name)
+        public Task<Dictionary<string,string>> GetGroupPicks(string pool_name)
         {
             IList<IList<object>> values = null;
 
             SpreadsheetsResource.ValuesResource _googleSheetValues = _service.Spreadsheets.Values;
-            var range = $"{pool_name}_overview";
+            var range = $"{pool_name}_picks";
 
 
             var request = _googleSheetValues.Get(_docId, range);
             var response = request.Execute();
             values = response.Values;
-          
-            return Task.FromResult(values);
+            var res = GetGroupPicksJson(values);
+            return Task.FromResult(res);
         }
         private string GetPicks(string pool_name, string user, out int userIndex)
         {
@@ -234,7 +234,7 @@ namespace hosted_pool.Data
                 fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
             }
 
-            stopString = "";
+            stopString = "results";
             val = values[++c];
             fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
             while (!fieldName.Equals(stopString))
@@ -247,6 +247,36 @@ namespace hosted_pool.Data
                 fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
             }
 
+            stopString = "";
+            val = values[++c];
+            fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            while (!fieldName.Equals(stopString))
+            {
+                Round round;
+                var found = roundDictionary.TryGetValue(fieldName, out round);
+                if (val.Count >= 2)
+                    round.Results.Add(val[1].ToString());
+                else
+                    round.Results.Add("");
+                if (c + 1 >= values.Count) break;
+                val = values[++c];
+                fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            }
+            res.UpdateResults();
+            return res;
+        }
+
+        private static Dictionary<string, string> GetGroupPicksJson(IList<IList<object>> values)
+        {
+            var res = new Dictionary<string, string>();
+            if (values == null || values.Count <= 0)
+            {
+                return null;
+            }
+            foreach(var v in values)
+            {
+                res.Add(v[0].ToString(), v[1].ToString());
+            }
 
             return res;
         }

@@ -28,6 +28,8 @@ namespace hosted_pool.Data
         }
 
         public int num { get; set; } = 0;
+
+        public bool eliminated { get; set; } = false;
     }
     public class Game
     {
@@ -91,6 +93,28 @@ namespace hosted_pool.Data
         }
 
         public int num { get; set; } = 0;
+
+        public void UpdateResult(string result, ref List<string> eliminatedTeams)
+        {
+            foreach (var possible in possibleWinners)
+            {
+                if(result != "") possible.eliminated = !possible.name.Equals(result);
+                if (possible.eliminated) eliminatedTeams.Add(possible.name);
+
+                if (eliminatedTeams.Contains(possible.name)) possible.eliminated = true;
+            }
+        }
+
+        public int points
+        {
+            get {
+
+                var alive = _possibleWinners.Where(x => !x.eliminated);
+                if (alive.Count() > 1) return 0;
+                return alive.FirstOrDefault().confidencePick;
+
+            }
+        }
     }
     public class Round
 
@@ -98,12 +122,24 @@ namespace hosted_pool.Data
         public string name { get; set; } = "";
         private List<Game> _games = new List<Game>();
         public IReadOnlyCollection<Game> games => _games.AsReadOnly();
+        public List<string> Results = new List<string>();
         public Pool? associatedPool { get; set; } = null;
         public void AddGame(Game game)
         {
             game.associatedRound = this;
             game.num = _games.Count() + 1;
             _games.Add(game);
+        }
+
+        public void UpdateGameResults(ref List<string> eliminatedTeams)
+        {
+            for(var c = 0; c<_games.Count; c++)
+            {
+                var res = Results[c];
+
+                 _games[c].UpdateResult(res, ref eliminatedTeams);
+                
+            }
         }
 
         public override string ToString()
@@ -126,6 +162,14 @@ namespace hosted_pool.Data
 
         public int num { get; set; } = 0;
 
+        public int points
+        {
+            get
+            {
+                return _games.Sum(g => g.points);
+            }
+        }
+
     }
     public class TieBreaker
     {
@@ -147,6 +191,7 @@ namespace hosted_pool.Data
         public string welcomeStr { get; set; } = "";
         public string pickSet { get; set; } = "";
 
+        public List<string> eliminatedTeams = new List<string>();
         private List<Round> _rounds = new List<Round>();
         public IReadOnlyCollection<Round> rounds => _rounds.AsReadOnly();
 
@@ -299,6 +344,20 @@ namespace hosted_pool.Data
         public DateTime GetAdjustEndTime(string tz = "Eastern Standard Time")
         {
             return GetAdjustedTime(end, tz);
+        }
+
+        public void UpdateResults()
+        {
+            foreach (var r in _rounds)
+                r.UpdateGameResults(ref eliminatedTeams);
+        }
+
+        public int points
+        {
+            get
+            {
+                return _rounds.Sum(r => r.points);
+            }
         }
     }
 

@@ -3,6 +3,8 @@ using System.Xml.Linq;
 using hosted_pool.Pages;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+//using Newtonsoft.Json;
 
 namespace hosted_pool.Data
 {
@@ -10,6 +12,7 @@ namespace hosted_pool.Data
     {
         public string name { get; set; } = "";
         public int confidencePick { get; set; }
+        [JsonIgnore]
         public Game? associatedGame { get; set; } = null;
         public string confidencePickStr
         {
@@ -35,6 +38,7 @@ namespace hosted_pool.Data
     {
         private List<Pick> _possibleWinners = new List<Pick>();
         public IReadOnlyCollection<Pick> possibleWinners => _possibleWinners.AsReadOnly();
+        [JsonIgnore]
         public Round? associatedRound { get; set; } = null;
         public void AddPosssible(Pick pick)
         {
@@ -105,13 +109,11 @@ namespace hosted_pool.Data
             }
         }
 
-        public int points
+        public int max_points
         {
             get {
-
-                var alive = _possibleWinners.Where(x => !x.eliminated);
-                if (alive.Count() > 1) return 0;
-                return alive.FirstOrDefault().confidencePick;
+                
+                return _possibleWinners.Where(x => !x.eliminated).Max(x=>x.confidencePick);
 
             }
         }
@@ -162,11 +164,11 @@ namespace hosted_pool.Data
 
         public int num { get; set; } = 0;
 
-        public int points
+        public int max_points
         {
             get
             {
-                return _games.Sum(g => g.points);
+                return _games.Sum(g => g.max_points);
             }
         }
 
@@ -182,6 +184,7 @@ namespace hosted_pool.Data
             set { _answer = value; }
         }
     }
+    [Serializable]
     public class Pool
     {
         public DateTime start { get; set; } = new DateTime();
@@ -190,7 +193,26 @@ namespace hosted_pool.Data
         public string poolName { get; set; } = "";
         public string welcomeStr { get; set; } = "";
         public string pickSet { get; set; } = "";
-
+        public string pickSetAbbr
+        {
+            get
+            {
+                var res = "";
+                var split = pickSet.Split(" ");
+                if (split.Length >=1)
+                {
+                    //res += split[0][0];
+                    //res += split[0][split[0].Length - 1];
+                    res += split[0];
+                    if (split.Length >= 2)
+                    {
+                        res += " ";
+                        res += split[1][0];
+                    }
+                }
+                return res;
+            }
+        }
         public List<string> eliminatedTeams = new List<string>();
         private List<Round> _rounds = new List<Round>();
         public IReadOnlyCollection<Round> rounds => _rounds.AsReadOnly();
@@ -204,7 +226,7 @@ namespace hosted_pool.Data
             start = DateTime.Now.AddHours(-1);
             end = DateTime.Now.AddHours(+1);
         }
-
+        
         public string Serialize() => JsonSerializer.Serialize(this);
         public static Pool Deserailize(string pool) => JsonSerializer.Deserialize<Pool>(pool);
 
@@ -352,13 +374,14 @@ namespace hosted_pool.Data
                 r.UpdateGameResults(ref eliminatedTeams);
         }
 
-        public int points
+        public int max_points
         {
             get
             {
-                return _rounds.Sum(r => r.points);
+                return _rounds.Sum(r => r.max_points);
             }
         }
+
     }
 
 

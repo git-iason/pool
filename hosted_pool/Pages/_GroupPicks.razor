@@ -12,8 +12,8 @@
     td, th {
         border: 0px;
         text-align: left;
-        padding: 5px;
-        margin: 5px;
+        padding: 10px;
+        margin: 10px;
         white-space: nowrap;
     }
 
@@ -29,52 +29,75 @@
             </tr>
         </thead>*@
     <tbody>
+        @{
+            var alternate = true;
 
+        }
+        
         @code{
             string clr = "background-color: #D1D1D1";
-            bool alternate = false;
         }
+    <tr style="@clr">
 
-        <tr>
-            <td> </td>
-            @foreach (var e in maxPointList)
-            {
-                var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63": "";
-                <td style="@color">@e.Item1</td>
-            }
-        </tr>
-        @for (var c = 0; c < possiblesRow.Count; c++)
+        <td s> </td>
+        @foreach (var r in possiblesRow)
         {
 
-            var back_color = alternate ? "background-color: #EAEAEA" : "background-color: #A0A0A0";
-            alternate = !alternate;
-            for (var i = 0; i < possiblesRow[c].Count; i++)
+
+            @foreach (var p in r)
             {
-                var p = possiblesRow[c][i];
                 var border = "";
-                if (i == possiblesRow[c].Count - 1) border = "border-bottom: 3px solid black;";
-
-
-                var strike = possiblesRow[c][i].Item2 ? "text-decoration: line-through;font-size: larger" : "font-size: larger";
-                <tr style="@border;@back_color;@strike;">
-                    <td style="border-right: 3px solid black"><b>@possiblesRow[c][i].Item1</b></td>
-
-                    @foreach (var entry in maxPointList)
-                    {
-                        var realEntry = pickRows[entry.Item1];
-                        var content = possiblesRow[c][i].Item2 ? " " : realEntry[c][i].Item1;
-                        var color = entry.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
-                        <td style="@color;text-align:center">@content</td>
-                    }
-                </tr>
+                if (p == r.Last()) border = "border-right: 3px solid black;";
+                var back_color = p.Item2 ? "background-color: #F95C5C" : "";
+                <td style="font-size: larger;@border;@back_color"><b>@p.Item1</b></td>
             }
+            
 
         }
-
+    </tr>
         @code
                 {string color = "background-color: #F3FCA3";
         }
+        <tr style="font-weight: bolder;@color">
+            <td> @userPickSet</td>
+            @foreach (var r in userPickRow)
+            {
 
+                if (r == userPickRow.Last()) color = "background-color: #00FFF0";
+                @for (int c = 0; c
+                  < r.Count; c++)
+                {
+                    var border = "";
+                    if (c == r.Count - 1) border = "border-right: 3px solid black;";
+
+                    if (@r[c] == r.Last()) border = "border-right: 3px solid black;";
+                    var fgcolor = @r[c].Item2 ? "color: #F95C5C" : "";
+                    <td style="font-size: larger;@border;@fgcolor;">@r[c].Item1</td>
+                }
+            }
+        </tr>
+        @foreach (var entry in pickRows)
+        {
+            var color = "background-color: #D1D1D1";
+            if (alternate) color = "background-color: #ECECEC";
+            alternate = !alternate;
+            <tr style="@color">
+                <td>@entry.Key</td>
+                @foreach (var r in entry.Value)
+                {
+
+
+                    if (r == entry.Value.Last()) color = "background-color: #D5D8DA";
+                    @for (int c = 0; c < r.Count; c++)
+                    {
+                        var border = "";
+                        if (c == r.Count - 1) border = "border-right: 3px solid black;";
+                        var fgcolor = @r[c].Item2 ? "color: #F95C5C" : "";
+                        <td style="font-size: larger;@border;@fgcolor"><b>@r[c].Item1</b></td>
+                    }
+                }
+            </tr>
+        }
     </tbody>
 </table>
 
@@ -93,8 +116,8 @@
     public List<Tuple<string, int>> gameRow = new List<Tuple<string, int>>();
 
     public List<List<Tuple<string, bool>>> possiblesRow = new List<List<Tuple<string, bool>>>();
+    public List<List<Tuple<string, bool>>> userPickRow = new List<List<Tuple<string, bool>>>();
     public Dictionary<string, List<List<Tuple<string, bool>>>> pickRows = new Dictionary<string, List<List<Tuple<string, bool>>>>();
-    public List<Tuple<string, int>> maxPointList = new List<Tuple<string, int>>();
     private string userPickSet = "";
 
     protected override async Task OnInitializedAsync()
@@ -111,17 +134,6 @@
             {
                 pool.LoadPicks(p.Value);
                 var l = new List<List<Tuple<string, bool>>>();
-
-                var points = new List<Tuple<string, bool>>();
-                points.Add(new Tuple<string, bool>(pool.max_points.ToString(), false));
-                var total = new List<Tuple<string, bool>>();
-
-                total.Add(new Tuple<string, bool>("Max Points", false));
-                if (buildHeader)
-                    possiblesRow.Add(total);
-
-                l.Add(points);
-
                 foreach (var r in pool.rounds)
                 {
                     var colspan = r.games.SelectMany(l => l.possibleWinners).Count();
@@ -140,7 +152,8 @@
                         }
                         if (p.Key.Equals(email))
                         {
-                            userPickSet = pool.pickSetAbbr;
+                            userPickRow.Add(tg);
+                            userPickSet = pool.pickSet;
                         }
 
                         l.Add(tg);
@@ -148,19 +161,25 @@
                         if (buildHeader) possiblesRow.Add(possibles);
                     }
                 }
+                var points = new List<Tuple<string, bool>>();
+                points.Add(new Tuple<string, bool>(pool.max_points.ToString(), false));
+                var total = new List<Tuple<string, bool>>();
+                total.Add(new Tuple<string, bool>("Total", false));
                 if (buildHeader)
                     possiblesRow.Add(total);
-
-                l.Add(points);
-                if (l.Count > 0) pickRows.Add(pool.pickSetAbbr, l);
+                if (p.Key.Equals(email))
+                {
+                    userPickRow.Add(points);
+                }
+                else
+                {
+                    l.Add(points);
+                }
+                if (l.Count > 0) pickRows.Add(pool.pickSet, l);
 
                 buildHeader = false;
-                maxPointList.Add(new Tuple<string, int>(pool.pickSetAbbr, pool.max_points));
             }
-
         }
-        maxPointList.Sort((x, y) => y.Item2.CompareTo(x.Item2));
-
     }
 }
 

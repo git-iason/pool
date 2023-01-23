@@ -41,57 +41,82 @@
         @code{
             string clr = "background-color: #D1D1D1";
             bool alternate = false;
+
         }
 
         <tr>
-            <td> <button onclick="@HideEliminated" >@hide_text</button></td>
+            <td> <button onclick="@HideEliminated">@hide_text</button></td>
             @foreach (var e in maxPointList)
-            {
-                var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
-                <td style="@color">@e.Item1</td>
-            }
-        </tr>
-        @for (var c = 0; c < possiblesRow.Count; c++)
-            {
-                var border_count = possiblesRow[c].Count;
-                if (hide_eliminated)
-                    border_count = possiblesRow[c].Count(x => !x.Item2);
-                Console.WriteLine($"BORDER: {border_count}");
-                border_count = border_count < 1 ? 1 : border_count;
-
-                var back_color = alternate ? "background-color: #EAEAEA" : "background-color: #A0A0A0";
-                alternate = !alternate;
-
-                var rows_shown = 0;
-                for (var i = 0; i < possiblesRow[c].Count; i++)
                 {
-                    var p = possiblesRow[c][i];
-                    var border = "";
+                    var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
+                <td style="@color">@e.Item1</td>
+                }
+        </tr>
+      
+        @for (var c = 0; c < possiblesRow.Count; c++)
+        {
+            var border_count = possiblesRow[c].Count;
+            if (hide_eliminated)
+                border_count = possiblesRow[c].Count(x => !x.Item2);
+            Console.WriteLine($"BORDER: {border_count}");
+            border_count = border_count < 1 ? 1 : border_count;
+
+            var back_color = alternate ? "background-color: #EAEAEA" : "background-color: #A0A0A0";
+            alternate = !alternate;
+
+            var rows_shown = 0;
+
+            for (var i = 0; i < possiblesRow[c].Count; i++)
+            {
+                var p = possiblesRow[c][i];
+                var border = "";
 
 
 
-                    if (rows_shown == border_count-1) border = "border-bottom: 3px solid black;";
+                if (rows_shown == border_count - 1) border = "border-bottom: 3px solid black;";
 
 
-                    var strike = possiblesRow[c][i].Item2 ? "text-decoration: line-through;font-size: larger" : "font-size: larger";
-                    if (!hide_eliminated || !possiblesRow[c][i].Item2)
+                var strike = possiblesRow[c][i].Item2 ? "text-decoration: line-through;font-size: larger" : "font-size: larger";
+                if (!hide_eliminated || !possiblesRow[c][i].Item2)
+                {
+                    rows_shown++;
+
+                    var header_text = possiblesRow[c][i].Item1;
+                    if (header_text.Equals("Max Points"))
                     {
-                        rows_shown++;
-                    <tr style="@border;@back_color;@strike;">
-                        <td style="border-right: 3px solid black"><b>@possiblesRow[c][i].Item1</b></td>
+                        back_color = "background-color: #96e1e3";
+                    }
+                    var border_right = "border-right: 3px solid black";
+                    var forcolor = "color:black";
+                    var override_user_color = false;
+                    if (header_text.Equals("Tie Breakers"))
+                    {
+                        back_color = "background-color: #83fc76";
+                        border_right = "";
+                        forcolor = "color:white";
+                        override_user_color = true;
+                        tiebreakers = true;
+                    }
+
+
+                    <tr style="@border;@back_color;@strike">
+                        <td style="@border_right;@font"><b>@header_text</b></td>
 
                         @foreach (var entry in maxPointList)
                         {
                             var realEntry = pickRows[entry.Item1];
                             var content = possiblesRow[c][i].Item2 ? " " : realEntry[c][i].Item1;
-                            var color = entry.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
+                            var color = entry.Item1.Equals(userPickSet) && !override_user_color ? "background-color: #BDEE63" : "";
                             <td style="@color;text-align:center">@content</td>
                         }
                     </tr>
+                        if (tiebreakers) font = "font-size:x-small";
+                        else
+                            font = "";
+                    }
                 }
-            }
 
-        }
+            }
 
         @code
                 {string color = "background-color: #F3FCA3";
@@ -120,6 +145,8 @@
     public List<Tuple<string, int>> maxPointList = new List<Tuple<string, int>>();
     private string userPickSet = "";
 
+    public bool tiebreakers = false;
+    public string font = "";
 
     public bool hide_eliminated { get; set; } = false;
     public string hide_text {
@@ -136,6 +163,8 @@
     public void HideEliminated()
     {
         hide_eliminated = !hide_eliminated;
+        font = "";
+        tiebreakers = false;
     }
     private void BuildData()
     {
@@ -190,6 +219,13 @@
 
                 if (buildHeader)
                     possiblesRow.Add(total);
+
+                var emptyPossibles = new List<Tuple<string, bool>>();
+                if (buildHeader) emptyPossibles.Add(new Tuple<string, bool>("Tie Breakers", false));
+                if (buildHeader) possiblesRow.Add(emptyPossibles);
+                var tempG = new List<Tuple<string, bool>>();
+                tempG.Add(new Tuple<string, bool>(" ", false));
+                l.Add(tempG);
 
                 foreach (var tb in pool.tiebreakers)
                 {

@@ -54,6 +54,11 @@ namespace hosted_pool.Data
                     p.confidencePickStr = "0";
         }
 
+        public void RemovePossible(string team)
+        {
+            _possibleWinners.RemoveAll(x => x.name == team);
+        }
+
         public List<string> Choices(string currentTeam)
         {
 
@@ -98,15 +103,10 @@ namespace hosted_pool.Data
 
         public int num { get; set; } = 0;
 
-        public void UpdateResult(string result, ref List<string> eliminatedTeams)
+        public void UpdateResult(List<string> results)
         {
-            foreach (var possible in possibleWinners)
-            {
-                if(result != "") possible.eliminated = !possible.name.Equals(result);
-                if (possible.eliminated) eliminatedTeams.Add(possible.name);
-
-                if (eliminatedTeams.Contains(possible.name)) possible.eliminated = true;
-            }
+            foreach (var res in results)
+                possibleWinners.Where(x => x.name.Equals(res)).FirstOrDefault().eliminated = true;
         }
 
         public int max_points
@@ -124,7 +124,7 @@ namespace hosted_pool.Data
         public string name { get; set; } = "";
         private List<Game> _games = new List<Game>();
         public IReadOnlyCollection<Game> games => _games.AsReadOnly();
-        public List<string> Results = new List<string>();
+        public List<List<string>> Results = new List<List<string>>();
         public Pool? associatedPool { get; set; } = null;
         public void AddGame(Game game)
         {
@@ -133,13 +133,13 @@ namespace hosted_pool.Data
             _games.Add(game);
         }
 
-        public void UpdateGameResults(ref List<string> eliminatedTeams)
+        public void UpdateGameResults()
         {
             for(var c = 0; c<_games.Count; c++)
             {
                 var res = Results[c];
 
-                 _games[c].UpdateResult(res, ref eliminatedTeams);
+                 _games[c].UpdateResult(res);
                 
             }
         }
@@ -371,7 +371,7 @@ namespace hosted_pool.Data
         public void UpdateResults()
         {
             foreach (var r in _rounds)
-                r.UpdateGameResults(ref eliminatedTeams);
+                r.UpdateGameResults();
         }
 
         public int max_points

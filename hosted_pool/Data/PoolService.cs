@@ -250,14 +250,17 @@ namespace hosted_pool.Data
             stopString = "";
             val = values[++c];
             fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";
+            int game_index = 0;
             while (!fieldName.Equals(stopString))
             {
                 Round round;
                 var found = roundDictionary.TryGetValue(fieldName, out round);
-                if (val.Count >= 2)
-                    round.Results.Add(val[1].ToString());
-                else
-                    round.Results.Add("");
+                var games = new List<string>();
+                foreach (var v in val.Skip(1))
+                    games.Add(v.ToString());
+
+                round.Results.Add(games);
+
                 if (c + 1 >= values.Count) break;
                 val = values[++c];
                 fieldName = val.Count > 0 ? val[0].ToString().ToLower() : "";

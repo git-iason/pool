@@ -18,7 +18,13 @@
         margin: 2px;
         white-space: nowrap;
     }
-
+    button {
+        background-color: transparent;
+        color: blue;
+        border: none;
+        text-decoration: underline;
+        cursor: pointer;
+    }
     /*            tr:nth-child(even) {
                         background-color: #dddddd;
                     }*/
@@ -38,7 +44,7 @@
         }
 
         <tr>
-            <td> </td>
+            <td> <button onclick="@HideEliminated" >@hide_text</button></td>
             @foreach (var e in maxPointList)
             {
                 var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
@@ -46,20 +52,31 @@
             }
         </tr>
         @for (var c = 0; c < possiblesRow.Count; c++)
-        {
-
-            var back_color = alternate ? "background-color: #EAEAEA" : "background-color: #A0A0A0";
-            alternate = !alternate;
-            for (var i = 0; i < possiblesRow[c].Count; i++)
             {
-                var p = possiblesRow[c][i];
-                var border = "";
-                if (i == possiblesRow[c].Count - 1) border = "border-bottom: 3px solid black;";
+                var border_count = possiblesRow[c].Count;
+                if (hide_eliminated)
+                    border_count = possiblesRow[c].Count(x => !x.Item2);
+                Console.WriteLine($"BORDER: {border_count}");
+                border_count = border_count < 1 ? 1 : border_count;
 
+                var back_color = alternate ? "background-color: #EAEAEA" : "background-color: #A0A0A0";
+                alternate = !alternate;
 
-                var strike = possiblesRow[c][i].Item2 ? "text-decoration: line-through;font-size: larger" : "font-size: larger";
-                //if (!possiblesRow[c][i].Item2)
+                var rows_shown = 0;
+                for (var i = 0; i < possiblesRow[c].Count; i++)
                 {
+                    var p = possiblesRow[c][i];
+                    var border = "";
+
+
+
+                    if (rows_shown == border_count-1) border = "border-bottom: 3px solid black;";
+
+
+                    var strike = possiblesRow[c][i].Item2 ? "text-decoration: line-through;font-size: larger" : "font-size: larger";
+                    if (!hide_eliminated || !possiblesRow[c][i].Item2)
+                    {
+                        rows_shown++;
                     <tr style="@border;@back_color;@strike;">
                         <td style="border-right: 3px solid black"><b>@possiblesRow[c][i].Item1</b></td>
 
@@ -98,15 +115,28 @@
     public List<Tuple<string, int>> gameRow = new List<Tuple<string, int>>();
 
     public List<List<Tuple<string, bool>>> possiblesRow = new List<List<Tuple<string, bool>>>();
+    public List<List<Tuple<string, bool>>> tbRow = new List<List<Tuple<string, bool>>>();
     public Dictionary<string, List<List<Tuple<string, bool>>>> pickRows = new Dictionary<string, List<List<Tuple<string, bool>>>>();
     public List<Tuple<string, int>> maxPointList = new List<Tuple<string, int>>();
     private string userPickSet = "";
+
+
+    public bool hide_eliminated { get; set; } = false;
+    public string hide_text {
+        get
+        {
+            return hide_eliminated ? "Show Eliminated" : "Hide Eliminated";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         BuildData();
     }
-
+    public void HideEliminated()
+    {
+        hide_eliminated = !hide_eliminated;
+    }
     private void BuildData()
     {
         if (picks != null && pool != null)
@@ -161,16 +191,16 @@
                 if (buildHeader)
                     possiblesRow.Add(total);
 
-                //foreach (var tb in pool.tiebreakers)
-                //{
-                //    var possibles = new List<Tuple<string, bool>>();
-                //    var tg = new List<Tuple<string, bool>>();
-                //    if (buildHeader) possibles.Add(new Tuple<string, bool>(tb.question, false));
-                //    tg.Add(new Tuple<string, bool>(tb.answer, false));
-                //    l.Add(tg);
+                foreach (var tb in pool.tiebreakers)
+                {
+                    var possibles = new List<Tuple<string, bool>>();
+                    var tg = new List<Tuple<string, bool>>();
+                    if (buildHeader) possibles.Add(new Tuple<string, bool>(tb.question, false));
+                    tg.Add(new Tuple<string, bool>(tb.answer, false));
+                    l.Add(tg);
 
-                //    if (buildHeader) possiblesRow.Add(possibles);
-                //}
+                    if (buildHeader) possiblesRow.Add(possibles);
+                }
 
 
 
@@ -183,5 +213,5 @@
         maxPointList.Sort((x, y) => y.Item2.CompareTo(x.Item2));
 
     }
-}
+    }
 

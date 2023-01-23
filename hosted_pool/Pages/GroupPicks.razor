@@ -12,8 +12,10 @@
     td, th {
         border: 0px;
         text-align: left;
-        padding: 5px;
-        margin: 5px;
+        padding-right: 3px;
+        padding-left: 3px;
+        padding-bottom: 0px;
+        margin: 2px;
         white-space: nowrap;
     }
 
@@ -39,7 +41,7 @@
             <td> </td>
             @foreach (var e in maxPointList)
             {
-                var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63": "";
+                var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
                 <td style="@color">@e.Item1</td>
             }
         </tr>
@@ -56,17 +58,20 @@
 
 
                 var strike = possiblesRow[c][i].Item2 ? "text-decoration: line-through;font-size: larger" : "font-size: larger";
-                <tr style="@border;@back_color;@strike;">
-                    <td style="border-right: 3px solid black"><b>@possiblesRow[c][i].Item1</b></td>
+                //if (!possiblesRow[c][i].Item2)
+                {
+                    <tr style="@border;@back_color;@strike;">
+                        <td style="border-right: 3px solid black"><b>@possiblesRow[c][i].Item1</b></td>
 
-                    @foreach (var entry in maxPointList)
-                    {
-                        var realEntry = pickRows[entry.Item1];
-                        var content = possiblesRow[c][i].Item2 ? " " : realEntry[c][i].Item1;
-                        var color = entry.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
-                        <td style="@color;text-align:center">@content</td>
-                    }
-                </tr>
+                        @foreach (var entry in maxPointList)
+                        {
+                            var realEntry = pickRows[entry.Item1];
+                            var content = possiblesRow[c][i].Item2 ? " " : realEntry[c][i].Item1;
+                            var color = entry.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
+                            <td style="@color;text-align:center">@content</td>
+                        }
+                    </tr>
+                }
             }
 
         }
@@ -148,11 +153,27 @@
                         if (buildHeader) possiblesRow.Add(possibles);
                     }
                 }
-                if (buildHeader)
-                    possiblesRow.Add(total);
+
 
                 l.Add(points);
                 if (l.Count > 0) pickRows.Add(pool.pickSetAbbr, l);
+
+                if (buildHeader)
+                    possiblesRow.Add(total);
+
+                //foreach (var tb in pool.tiebreakers)
+                //{
+                //    var possibles = new List<Tuple<string, bool>>();
+                //    var tg = new List<Tuple<string, bool>>();
+                //    if (buildHeader) possibles.Add(new Tuple<string, bool>(tb.question, false));
+                //    tg.Add(new Tuple<string, bool>(tb.answer, false));
+                //    l.Add(tg);
+
+                //    if (buildHeader) possiblesRow.Add(possibles);
+                //}
+
+
+
 
                 buildHeader = false;
                 maxPointList.Add(new Tuple<string, int>(pool.pickSetAbbr, pool.max_points));

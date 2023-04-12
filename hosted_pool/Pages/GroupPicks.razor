@@ -43,15 +43,17 @@
             bool alternate = false;
 
         }
-
+        
         <tr>
-            <td> <button onclick="@HideEliminated">@hide_text</button></td>
-            @foreach (var e in maxPointList)
+            @if (maxPointList.Count>0)
+                { <td> <button onclick="@HideEliminated">@hide_text</button></td>}
+                
+                @foreach (var e in maxPointList)
                 {
                     var color = e.Item1.Equals(userPickSet) ? "background-color: #BDEE63" : "";
-                <td style="@color">@e.Item1</td>
+                    <td style="@color">@e.Item1</td>
                 }
-        </tr>
+            </tr>
       
         @for (var c = 0; c < possiblesRow.Count; c++)
         {

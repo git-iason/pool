@@ -1,0 +1,52 @@
+﻿<Properties StartupConfiguration="{6180C5EF-22E7-48BE-A445-4ECB73A3532D}|Default" NuGet.AddPackagesDialog.IncludePrerelease="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="hosted_pool/Pages/Picks2.razor">
+    <Files>
+      <File FileName="hosted_pool/Data/PoolModels.cs" />
+      <File FileName="hosted_pool/Data/PoolService.cs" />
+      <File FileName="hosted_pool/Pages/Picks2.razor" Line="269" Column="1" />
+      <File FileName="hosted_pool/Pages/_Host.cshtml" />
+      <File FileName="hosted_pool/Pages/GroupPicks.razor" />
+      <File FileName="hosted_pool/App.razor" />
+      <File FileName="hosted_pool/Properties/launchSettings.json" />
+      <File FileName="hosted_pool/Program.cs" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="hosted_pool" expanded="True">
+            <Node name="hosted_pool" expanded="True">
+              <Node name="Dependencies" expanded="True" />
+              <Node name="Areas" expanded="True">
+                <Node name="Identity" expanded="True">
+                  <Node name="Pages" expanded="True">
+                    <Node name="Account" expanded="True" />
+                  </Node>
+                </Node>
+              </Node>
+              <Node name="Data" expanded="True" />
+              <Node name="Pages" expanded="True">
+                <Node name="Picks2.razor" selected="True" />
+              </Node>
+              <Node name="Properties" expanded="True" />
+              <Node name="Shared" expanded="True">
+                <Node name="MainLayout.razor" expanded="True" />
+              </Node>
+              <Node name="wwwroot" expanded="True">
+                <Node name="css" expanded="True">
+                  <Node name="bootstrap" expanded="True" />
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.hosted__pool PreferredExecutionTarget="/Applications/Firefox.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

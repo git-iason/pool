@@ -277,7 +277,7 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        PoolName = PoolName ?? "nhl";
+        PoolName = PoolName ?? "mlbTT";
         
 
         state = await aspService.GetAuthenticationStateAsync();
@@ -340,7 +340,7 @@ else
 
     [SupplyParameterFromQuery(Name = "pool")]
     [Parameter]
-    public string PoolName { get; set; } = "nhl";
+    public string PoolName { get; set; } = "mlbTT";
 
     //[Parameter]
     //public int PoolId { get; set; } = 0;

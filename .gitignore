@@ -194,3 +194,10 @@ hosted_pool/app.db
 .vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
 .vs/hosted_pool/xs/project-cache/hosted_pool-Debug.json
 hosted_pool/app.db-wal
+/.vs/hosted_pool/config/applicationhost.config
+/.vs/hosted_pool/DesignTimeBuild
+/.vs/hosted_pool/FileContentIndex
+/.vs
+/hosted_pool/bin/Debug/net6.0
+/hosted_pool/obj/Debug/net6.0
+/hosted_pool/app.db
